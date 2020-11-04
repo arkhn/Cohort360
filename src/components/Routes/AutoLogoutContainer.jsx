@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import IdleTimer from 'react-idle-timer'
@@ -11,9 +11,9 @@ import axios from 'axios'
 
 import { ACCES_TOKEN, REFRESH_TOKEN, CONTEXT } from '../../constants'
 import { logout as logoutAction } from '../../state/store'
-import useStyles from './style'
+import useStyles from './styles'
 
-function AutoLogoutContainer() {
+const AutoLogoutContainer = () => {
   const classes = useStyles()
 
   const [dialogIsOpen, setDialogIsOpen] = useState(false)
@@ -56,21 +56,25 @@ function AutoLogoutContainer() {
   const refreshToken = () => {
     setInterval(async () => {
       // console.log('refresh still actif')
-      if(CONTEXT === ('aphp' || 'arkhn')) {
-        await axios.post('/api/jwt/refresh/', {
-          refresh: localStorage.getItem(REFRESH_TOKEN)
-        }).then((res) => {
-          if(res.status === 200) {
-            localStorage.setItem(ACCES_TOKEN, res.data.access)
-            localStorage.setItem(REFRESH_TOKEN, res.data.refresh)
-          }
-        })
+      if (CONTEXT === ('aphp' || 'arkhn')) {
+        await axios
+          .post('/api/jwt/refresh/', {
+            refresh: localStorage.getItem(REFRESH_TOKEN)
+          })
+          .then((res) => {
+            if (res.status === 200) {
+              localStorage.setItem(ACCES_TOKEN, res.data.access)
+              localStorage.setItem(REFRESH_TOKEN, res.data.refresh)
+            }
+          })
       }
-    }, 13 * 60 * 1000);
+    }, 13 * 60 * 1000)
   }
 
-  refreshToken()
-
+  useEffect(() => {
+    refreshToken()
+  }, [])
+  
   return (
     <div>
       <Dialog open={dialogIsOpen}>

@@ -16,7 +16,7 @@ import TextField from '@material-ui/core/TextField'
 
 import { docTypes } from '../../../assets/docTypes.json'
 
-import useStyles from './style'
+import useStyles from './styles'
 
 const DocumentFilters = ({
   open,

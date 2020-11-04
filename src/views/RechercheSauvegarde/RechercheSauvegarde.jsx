@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
 import Research from '../../components/SavedResearch/ResearchCard'
 
-import useStyles from './style'
+import useStyles from './styles'
 
 const SavedResearches = (props) => {
   const classes = useStyles()

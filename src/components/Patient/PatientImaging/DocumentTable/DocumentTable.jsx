@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
@@ -16,14 +16,14 @@ import { ReactComponent as PdfIcon } from '../../../../assets/icones/file-pdf.sv
 import { ReactComponent as CheckIcon } from '../../../../assets/icones/check.svg'
 import { ReactComponent as CancelIcon } from '../../../../assets/icones/times.svg'
 
-import useStyles from './style'
+import useStyles from './styles'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`
 
 const DocumentRow = ({ row }) => {
   const classes = useStyles()
 
-  const [documentDialogOpen, setDocumentDialogOpen] = React.useState(false)
+  const [documentDialogOpen, setDocumentDialogOpen] = useState(false)
 
   const getStatusShip = (type) => {
     if (type === 'final') {

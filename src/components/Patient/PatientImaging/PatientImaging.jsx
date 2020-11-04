@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Grid from '@material-ui/core/Grid'
 import Pagination from '@material-ui/lab/Pagination'
 import InputBase from '@material-ui/core/InputBase'
@@ -11,11 +11,11 @@ import { ReactComponent as FilterList } from '../../../assets/icones/filter.svg'
 
 import DocumentTable from './DocumentTable/DocumentTable'
 
-import useStyles from './style'
+import useStyles from './styles'
 
 const PatientDocs = ({ patientId, documents }) => {
   const classes = useStyles()
-  const [page, setPage] = React.useState(1)
+  const [page, setPage] = useState(1)
 
   const documentLines = 4 // Number of desired lines in the document array
 

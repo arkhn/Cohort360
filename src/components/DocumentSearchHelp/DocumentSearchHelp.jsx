@@ -16,7 +16,7 @@ import TableCell from '@material-ui/core/TableCell'
 import TableBody from '@material-ui/core/TableBody'
 import Link from '@material-ui/core/Link'
 
-import useStyles from './style'
+import useStyles from './styles.js'
 
 const DocumentFilters = ({ open, onClose }) => {
   const classes = useStyles()

@@ -49,7 +49,7 @@ const Scope = () => {
           <Typography variant="h1" color="primary" className={classes.title}>
             Explorer un perimètre
           </Typography>
-          <ScopeTree valid={trimItems} />
+          <ScopeTree submit={trimItems} />
         </Grid>
       </Grid>
     </Grid>

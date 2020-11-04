@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 
 import Pagination from '@material-ui/lab/Pagination'
 import Grid from '@material-ui/core/Grid'
@@ -10,7 +11,7 @@ import { ReactComponent as SearchIcon } from '../../assets/icones/search.svg'
 
 import ResearchTable from './ResearchTable/ResearchTable'
 
-import useStyles from './style'
+import useStyles from './styles'
 
 import { fetchCohorts, setFavorite } from '../../services/savedResearches'
 
@@ -27,13 +28,19 @@ const Research = ({ simplified, onClickRow, filteredIds }) => {
   useEffect(() => {
     fetchCohorts()
       .then(({ formattedCohort, total }) => {
-        setResearches(formattedCohort)
+        if (filteredIds) {
+          setResearches(
+            formattedCohort.filter((r) => !filteredIds.includes(r.researchId))
+          )
+        } else {
+          setResearches(formattedCohort)
+        }
         setTotal(total)
       })
       .then(() => {
         setLoadingStatus(false)
       })
-  }, [])
+  }, []) // eslint-disable-line
 
   const onDeleteCohort = async (cohortId) => {
     setResearches(researches.filter((r) => r.researchId !== cohortId))
@@ -126,6 +133,12 @@ const Research = ({ simplified, onClickRow, filteredIds }) => {
       />
     </Grid>
   )
+}
+
+Research.propTypes = {
+  simplified: PropTypes.bool,
+  onClickRow: PropTypes.func,
+  filteredIds: PropTypes.arrayOf(PropTypes.string)
 }
 
 export default Research

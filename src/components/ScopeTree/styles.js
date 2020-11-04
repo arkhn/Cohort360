@@ -1,30 +1,30 @@
 import { makeStyles } from '@material-ui/core/styles'
 
 export const itemStyles = {
-  group: {
-    // backgroundColor: 'gray',
-    // color: 'white',
+  level0: {
+    // backgroundColor: 'gray'
+    color: 'white',
     '&:hover': {
       backgroundColor: 'lightgray'
     }
   },
-  hospital: {
-    backgroundColor: '#fcfcfc',
-    // color: 'white',
+  level1: {
+    // backgroundColor: '#fcfcfc'
+    color: 'white',
     '&:hover': {
       backgroundColor: 'lightgray'
     }
   },
-  service: {
-    // backgroundColor: 'lightgray',
-    // color: 'black',
+  level2: {
+    // backgroundColor: 'lightgray'
+    color: 'black',
     '&:hover': {
       backgroundColor: 'white'
     }
   },
-  unit: {
-    // backgroundColor: 'white',
-    // color: 'black',
+  level3: {
+    // backgroundColor: 'white'
+    color: 'black',
     '&:hover': {
       backgroundColor: 'lightgray'
     }

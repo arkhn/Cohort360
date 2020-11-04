@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import Table from '@material-ui/core/Table'
@@ -23,7 +23,7 @@ import { ReactComponent as StarFull } from '../../../assets/icones/star full.svg
 
 import { onRemoveCohort } from '../../../services/savedResearches'
 
-import useStyles from './style'
+import useStyles from './styles'
 import { Typography } from '@material-ui/core'
 
 const FavStar = (props) => {
@@ -36,8 +36,8 @@ const FavStar = (props) => {
 
 const ResearchTable = (props) => {
   const classes = useStyles()
-  const [dialogOpen, setOpenDialog] = React.useState(false)
-  const [selectedCohort, setSelectedCohort] = React.useState()
+  const [dialogOpen, setOpenDialog] = useState(false)
+  const [selectedCohort, setSelectedCohort] = useState()
 
   const history = useHistory()
 
@@ -187,7 +187,8 @@ ResearchTable.propTypes = {
   researchData: PropTypes.array.isRequired,
   researchLines: PropTypes.number.isRequired,
   onSetCohortFavorite: PropTypes.func,
-  onDeleteCohort: PropTypes.func
+  onDeleteCohort: PropTypes.func,
+  page: PropTypes.number
 }
 
 export default ResearchTable

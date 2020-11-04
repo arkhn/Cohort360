@@ -33,7 +33,9 @@ const PatientLaboTable = ({ patient }) => {
           sampleType: labResult.resource.bodySite
             ? labResult.resource.bodySite.coding[0].code
             : '-',
-          date: new Date(labResult.resource.effectiveDateTime).toLocaleDateString('fr-FR'),
+          date: new Date(
+            labResult.resource.effectiveDateTime
+          ).toLocaleDateString('fr-FR'),
           value: labResult.resource.valueQuantity
             ? `${labResult.resource.valueQuantity.value} ${labResult.resource.valueQuantity.unit}`
             : labResult.resource.interpretation
@@ -65,8 +67,12 @@ const PatientLaboTable = ({ patient }) => {
           alignItems="center"
           className={classes.searchBar}
         >
-          <InputBase placeholder="Rechercher" className={classes.input} />
-          <IconButton type="submit" aria-label="search">
+          <InputBase
+            placeholder="Rechercher"
+            className={classes.input}
+            disabled
+          />
+          <IconButton type="submit" aria-label="search" disabled>
             <SearchIcon
               className={classes.searchIcon}
               fill="#ED6D91"
@@ -79,6 +85,7 @@ const PatientLaboTable = ({ patient }) => {
           disableElevation
           startIcon={<FilterList height="15px" fill="#FFF" />}
           className={classes.searchButton}
+          disabled
         >
           Filtrer
         </Button>
