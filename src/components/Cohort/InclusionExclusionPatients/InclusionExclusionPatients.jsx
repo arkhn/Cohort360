@@ -44,10 +44,7 @@ import { getAgeArkhn } from '../../../utils/age'
 import { ReactComponent as FemaleIcon } from '../../../assets/icones/venus.svg'
 import { ReactComponent as MaleIcon } from '../../../assets/icones/mars.svg'
 
-import {
-  getPatientsFromPerimeter,
-  getPatientsFromCohortId
-} from 'services/patient'
+import { getPatientsFromPerimeter, getPatientsFromCohortId } from 'services/patient'
 import { patchCohortMembers } from 'services/cohortCreation'
 
 const PatientRow = ({ patient, selected, fromCohort, onClickCheckbox }) => {
@@ -57,19 +54,11 @@ const PatientRow = ({ patient, selected, fromCohort, onClickCheckbox }) => {
   const gender = patient.gender
   const isPatientDeceased = undefined !== patient.deceasedDateTime
   const birthDate = new Date(patient.birthDate)
-  const deathDateOrToday = isPatientDeceased
-    ? new Date(patient.deceasedDateTime)
-    : new Date()
+  const deathDateOrToday = isPatientDeceased ? new Date(patient.deceasedDateTime) : new Date()
   const age = getAgeArkhn(birthDate, deathDateOrToday)
   const GenderIcon = (
     <SvgIcon
-      component={
-        gender === 'male'
-          ? MaleIcon
-          : gender === 'female'
-          ? FemaleIcon
-          : OtherGenderIcon
-      }
+      component={gender === 'male' ? MaleIcon : gender === 'female' ? FemaleIcon : OtherGenderIcon}
       viewBox={gender === 'male' ? '0 0 380 500' : '0 0 300 500'}
       // fontSize="small"
       className={classes.SvgIcon}
@@ -78,21 +67,11 @@ const PatientRow = ({ patient, selected, fromCohort, onClickCheckbox }) => {
 
   return (
     <ListItem className={fromCohort ? classes.cohortPatientListItem : null}>
-      <ListItemIcon>
-        {
-          <Checkbox
-            checked={selected}
-            onClick={() => onClickCheckbox(patient.id)}
-          />
-        }
-      </ListItemIcon>
+      <ListItemIcon>{<Checkbox checked={selected} onClick={() => onClickCheckbox(patient.id)} />}</ListItemIcon>
       <ListItemAvatar>
         <Avatar>{GenderIcon}</Avatar>
       </ListItemAvatar>
-      <ListItemText
-        primary={`${name.given[0]} ${name.family}`}
-        secondary={`${age} ans - ${identifier.value}`}
-      />
+      <ListItemText primary={`${name.given[0]} ${name.family}`} secondary={`${age} ans - ${identifier.value}`} />
       <ListItemSecondaryAction>
         <Chip
           label={isPatientDeceased ? 'Décédé' : 'Vivant'}
@@ -111,12 +90,7 @@ PatientRow.propType = {
   onClickCheckbox: PropTypes.func.isRequired
 }
 
-const ImportPatientMenu = ({
-  anchorEl,
-  handleClose,
-  setOpenModal,
-  setModalContent
-}) => {
+const ImportPatientMenu = ({ anchorEl, handleClose, setOpenModal, setModalContent }) => {
   const dispatch = useDispatch()
   const practitioner = useSelector((state) => state.practitioner)
   const cohort = useSelector((state) => state.exploredCohort)
@@ -126,20 +100,15 @@ const ImportPatientMenu = ({
   const importPatientsFromPerimeter = useCallback(async (providers) => {
     const patients = await getPatientsFromPerimeter(providers)
     dispatch(addImportedPatients(patients))
-  }, [])
+  }, []) //eslint-disable-line
 
   const importPatientsFromCohortId = useCallback(async (cohortId) => {
     const patients = await getPatientsFromCohortId(cohortId)
     dispatch(addImportedPatients(patients))
-  }, [])
+  }, []) //eslint-disable-line
 
   return anchorEl !== undefined ? (
-    <Menu
-      anchorEl={anchorEl}
-      keepMounted
-      open={Boolean(anchorEl)}
-      onClose={handleClose}
-    >
+    <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
       <MenuItem
         onClick={() => {
           dispatch(addImportedPatients(practitioner.patients))
@@ -245,12 +214,7 @@ ImportPatientMenu.propType = {
   setModalContent: PropTypes.func.isRequired
 }
 
-const InclusionExclusionContainer = ({
-  title,
-  content,
-  setOpenModal,
-  setModalContent
-}) => {
+const InclusionExclusionContainer = ({ title, content, setOpenModal, setModalContent }) => {
   const classes = useStyles()
 
   const [anchorEl, setAnchorEl] = useState(null)
@@ -271,10 +235,7 @@ const InclusionExclusionContainer = ({
         </Typography>
         {setOpenModal && setModalContent && (
           <>
-            <IconButton
-              classes={{ root: classes.iconButtonRoot }}
-              onClick={handleClick}
-            >
+            <IconButton classes={{ root: classes.iconButtonRoot }} onClick={handleClick}>
               <AddIcon />
             </IconButton>
             <ImportPatientMenu
@@ -297,12 +258,7 @@ InclusionExclusionContainer.propType = {
   setModalContent: PropTypes.func
 }
 
-const PatientSelectableList = ({
-  patients,
-  cohortPatients,
-  onChangeSelection,
-  selectedPatients
-}) => {
+const PatientSelectableList = ({ patients, cohortPatients, onChangeSelection, selectedPatients }) => {
   const classes = useStyles()
 
   const allPatients = [...patients, ...(cohortPatients || [])]
@@ -312,10 +268,7 @@ const PatientSelectableList = ({
     if (selectedPatients.find((p) => p.id === patientId)) {
       newSelectedList = selectedPatients.filter((p) => p.id !== patientId)
     } else {
-      newSelectedList = [
-        ...selectedPatients,
-        allPatients.find((p) => p.id === patientId)
-      ]
+      newSelectedList = [...selectedPatients, allPatients.find((p) => p.id === patientId)]
     }
     onChangeSelection(newSelectedList)
   }
@@ -334,25 +287,16 @@ const PatientSelectableList = ({
       subheader={
         <ListSubheader classes={{ root: classes.patientListHeaderContainer }}>
           <FormControlLabel
-            control={
-              <Checkbox
-                onClick={handleSelectAll}
-                checked={selectedPatients.length === allPatients.length}
-              />
-            }
+            control={<Checkbox onClick={handleSelectAll} checked={selectedPatients.length === allPatients.length} />}
             label="Tout sélectionner"
           />
-          <Typography
-            classes={{ root: classes.patientListHeaderLabel }}
-          >{`${allPatients.length} patients`}</Typography>
+          <Typography classes={{ root: classes.patientListHeaderLabel }}>{`${allPatients.length} patients`}</Typography>
         </ListSubheader>
       }
     >
       {cohortPatients &&
         cohortPatients.map((patient) => {
-          const isPatientSelected = !!selectedPatients.find(
-            (p) => p && p.id === patient.id
-          )
+          const isPatientSelected = !!selectedPatients.find((p) => p && p.id === patient.id)
           return (
             <PatientRow
               patient={patient}
@@ -364,8 +308,7 @@ const PatientSelectableList = ({
           )
         })}
       {patients.map((patient) => {
-        const isPatientSelected =
-          undefined !== selectedPatients.find((p) => p && p.id === patient.id)
+        const isPatientSelected = undefined !== selectedPatients.find((p) => p && p.id === patient.id)
         return (
           <PatientRow
             patient={patient}
@@ -383,19 +326,14 @@ const ImportPatientsContent = ({ setModalContent, setOpenModal }) => {
   const dispatch = useDispatch()
   const classes = useStyles()
 
-  const importedPatients = useSelector(
-    (state) => state.exploredCohort.importedPatients
-  )
+  const importedPatients = useSelector((state) => state.exploredCohort.importedPatients)
 
   const [selectedPatients, setSelectedPatients] = useState([])
 
   return (
     <>
       {importedPatients.length === 0 ? (
-        <ImportPatientMenu
-          setModalContent={setModalContent}
-          setOpenModal={setOpenModal}
-        />
+        <ImportPatientMenu setModalContent={setModalContent} setOpenModal={setOpenModal} />
       ) : (
         <>
           <PatientSelectableList
@@ -440,13 +378,9 @@ const InclusionExclusionContent = ({ include }) => {
   const dispatch = useDispatch()
   const classes = useStyles()
   const patients = useSelector((state) =>
-    include
-      ? state.exploredCohort.includedPatients
-      : state.exploredCohort.excludedPatients
+    include ? state.exploredCohort.includedPatients : state.exploredCohort.excludedPatients
   )
-  const originalPatients = useSelector((state) =>
-    include ? state.exploredCohort.originalPatients : []
-  )
+  const originalPatients = useSelector((state) => (include ? state.exploredCohort.originalPatients : []))
   const [selectedPatients, setSelectedPatients] = useState([])
   return (
     <>
@@ -493,6 +427,7 @@ const InclusionExclusionPatientsPanel = ({ cohort, loading }) => {
   const [openModal, setOpenModal] = useState(false)
   const [modalContent, setModalContent] = useState(null)
 
+  //eslint-disable-next-line
   const onSave = useCallback(async () => {
     const newMembers = patchCohortMembers(cohort)
     dispatch(updateCohort(newMembers))
@@ -517,28 +452,16 @@ const InclusionExclusionPatientsPanel = ({ cohort, loading }) => {
           setOpenModal={setOpenModal}
           setModalContent={setModalContent}
           title={'Patients importés'}
-          content={
-            <ImportPatientsContent
-              setOpenModal={setOpenModal}
-              setModalContent={setModalContent}
-            />
-          }
+          content={<ImportPatientsContent setOpenModal={setOpenModal} setModalContent={setModalContent} />}
         />
-        <InclusionExclusionContainer
-          title={'Patients inclus'}
-          content={<InclusionExclusionContent include />}
-        />
+        <InclusionExclusionContainer title={'Patients inclus'} content={<InclusionExclusionContent include />} />
         <InclusionExclusionContainer
           title={'Patients exclus'}
           content={<InclusionExclusionContent include={false} />}
         />
       </Grid>
       <div className={classes.footerButtonContainer}>
-        <Button
-          className={classes.saveButton}
-          variant="contained"
-          onClick={onSave}
-        >
+        <Button className={classes.saveButton} variant="contained" onClick={onSave}>
           {'Sauvegarder'}
         </Button>
       </div>

@@ -42,19 +42,10 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({ document }) => {
     NDA:
       document.resourceType === 'Composition'
         ? document.NDA
-        : document.securityLabel?.[0].coding?.[0].display ??
-          document.securityLabel?.[0].coding?.[0].code ??
-          '-',
-    title:
-      document.resourceType === 'Composition'
-        ? document.title ?? '-'
-        : document.description ?? '-',
-    serviceProvider:
-      document.resourceType === 'Composition' ? document.serviceProvider : '-',
-    type:
-      document.type?.coding?.[0].display ??
-      document.type?.coding?.[0].code ??
-      '-'
+        : document.securityLabel?.[0].coding?.[0].display ?? document.securityLabel?.[0].coding?.[0].code ?? '-',
+    title: document.resourceType === 'Composition' ? document.title ?? '-' : document.description ?? '-',
+    serviceProvider: document.resourceType === 'Composition' ? document.serviceProvider : '-',
+    type: document.type?.coding?.[0].display ?? document.type?.coding?.[0].code ?? '-'
   }
   const handleOpenPdf = () => {
     setDocumentDialogOpen(true)
@@ -66,21 +57,9 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({ document }) => {
 
   const getStatusShip = (type?: string) => {
     if (type === 'final' || type === 'current') {
-      return (
-        <Chip
-          className={classes.validChip}
-          icon={<CheckIcon height="15px" fill="#FFF" />}
-          label={type}
-        />
-      )
+      return <Chip className={classes.validChip} icon={<CheckIcon height="15px" fill="#FFF" />} label={type} />
     } else {
-      return (
-        <Chip
-          className={classes.cancelledChip}
-          icon={<CancelIcon height="15px" fill="#FFF" />}
-          label={type}
-        />
-      )
+      return <Chip className={classes.cancelledChip} icon={<CancelIcon height="15px" fill="#FFF" />} label={type} />
     }
   }
 
@@ -89,9 +68,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({ document }) => {
       <TableRow key={row.id} className={classes.tableBodyRows}>
         <TableCell align="left">{row.NDA}</TableCell>
         <TableCell align="left">
-          {row.date
-            ? new Date(row.date).toLocaleDateString('fr-FR')
-            : 'Date inconnue'}
+          {row.date ? new Date(row.date).toLocaleDateString('fr-FR') : 'Date inconnue'}
         </TableCell>
         <TableCell align="left">{row.type}</TableCell>
         <TableCell align="left" className={classes.description}>
@@ -105,11 +82,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({ document }) => {
           </IconButton>
         </TableCell>
       </TableRow>
-      <Dialog
-        open={documentDialogOpen}
-        onClose={() => setDocumentDialogOpen(false)}
-        maxWidth="lg"
-      >
+      <Dialog open={documentDialogOpen} onClose={() => setDocumentDialogOpen(false)} maxWidth="lg">
         <DialogContent>
           <Document
             file={{
@@ -144,13 +117,8 @@ type DocumentTableTypes = {
   page: number
   documentLines: number
 }
-const DocumentTable: React.FC<DocumentTableTypes> = ({
-  documents,
-  page,
-  documentLines
-}) => {
+const DocumentTable: React.FC<DocumentTableTypes> = ({ documents, page, documentLines }) => {
   const classes = useStyles()
-
   return (
     <>
       {documents ? (
@@ -182,11 +150,9 @@ const DocumentTable: React.FC<DocumentTableTypes> = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {documents
-                .slice((page - 1) * documentLines, page * documentLines)
-                .map((document) => (
-                  <DocumentRow document={document} />
-                ))}
+              {documents.slice((page - 1) * documentLines, page * documentLines).map((document, index) => (
+                <DocumentRow key={`docRow ${index}`} document={document} />
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

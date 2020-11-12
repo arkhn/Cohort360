@@ -15,11 +15,7 @@ type TimelineItemLeftTypes = {
   open: (encounter?: IEncounter) => void
   dotHeight: number
 }
-const TimelineItemLeft: React.FC<TimelineItemLeftTypes> = ({
-  data,
-  open,
-  dotHeight
-}) => {
+const TimelineItemLeft: React.FC<TimelineItemLeftTypes> = ({ data, open, dotHeight }) => {
   let color = ''
   switch (data?.class.code) {
     case 'hosp':
@@ -52,11 +48,7 @@ const TimelineItemLeft: React.FC<TimelineItemLeftTypes> = ({
               + de détails
             </span>
             {data.serviceProvider?.display && (
-              <Chip
-                label={data.serviceProvider.display}
-                size="small"
-                className={classes.chip}
-              />
+              <Chip label={data.serviceProvider.display} size="small" className={classes.chip} />
             )}
             <div className={classes.hospitText}>
               <div className={classes.hospitTitle}>
@@ -69,12 +61,8 @@ const TimelineItemLeft: React.FC<TimelineItemLeftTypes> = ({
               </div>
               <div className={classes.hospitDates}>
                 {data.period?.start
-                  ? `Du ${new Date(data.period.start).toLocaleDateString(
-                      'fr-FR'
-                    )} au ${
-                      data.period.end
-                        ? new Date(data.period.end).toLocaleDateString('fr-FR')
-                        : '-'
+                  ? `Du ${new Date(data.period.start).toLocaleDateString('fr-FR')} au ${
+                      data.period.end ? new Date(data.period.end).toLocaleDateString('fr-FR') : '-'
                     }`
                   : 'Pas de date'}
               </div>

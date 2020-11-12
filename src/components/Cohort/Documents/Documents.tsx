@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react'
 
 import {
-  Grid,
+  Button,
   CssBaseline,
-  Typography,
-  Paper,
-  InputBase,
+  Grid,
   IconButton,
-  Button
+  InputBase,
+  // Paper,
+  Typography
 } from '@material-ui/core'
 import Pagination from '@material-ui/lab/Pagination'
 
 import DocumentFilters from '../../Filters/DocumentFilters/DocumentFilters'
 import DocumentList from './DocumentList/DocumentList'
-import WordCloud from '../Preview/Charts/WordCloud'
+// import WordCloud from '../Preview/Charts/WordCloud'
 import DocumentSearchHelp from '../../DocumentSearchHelp/DocumentSearchHelp'
 import { fetchDocuments } from '../../../services/cohortInfos'
 
@@ -22,72 +22,72 @@ import { ReactComponent as SearchIcon } from '../../../assets/icones/search.svg'
 import { ReactComponent as FilterList } from '../../../assets/icones/filter.svg'
 
 import { CohortComposition } from 'types'
-import { IExtension } from '@ahryman40k/ts-fhir-types/lib/R4'
+import {
+  // IExtension,
+  IDocumentReference
+} from '@ahryman40k/ts-fhir-types/lib/R4'
 
 import useStyles from './styles'
+import { useAppSelector } from 'state'
 
 type DocumentsProps = {
   groupId?: string
+  deidentifiedBoolean: boolean
 }
 
-const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
+const Documents: React.FC<DocumentsProps> = ({ groupId, deidentifiedBoolean }) => {
   const classes = useStyles()
+  const encounters = useAppSelector((state) => state.exploredCohort.encounters)
   const [page, setPage] = useState(1)
   const [documentsNumber, setDocumentsNumber] = useState<number | undefined>(0)
-  const [allDocumentsNumber, setAllDocumentsNumber] = useState<
-    number | undefined
-  >(0)
-  const [documents, setDocuments] = useState<CohortComposition[]>([])
+  const [allDocumentsNumber, setAllDocumentsNumber] = useState<number | undefined>(0)
+  const [documents, setDocuments] = useState<(CohortComposition | IDocumentReference)[]>([])
   const [loadingStatus, setLoadingStatus] = useState(true)
   const [searchInput, setSearchInput] = useState('')
   const [searchMode, setSearchMode] = useState(false)
-  const [wordcloudData, setWordcloudData] = useState<IExtension[] | undefined>()
+  // const [wordcloudData, setWordcloudData] = useState<IExtension[] | undefined>()
   const [open, setOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const [nda, setNda] = useState('')
   const [selectedDocTypes, setSelectedDocTypes] = useState(['all'])
+  const [startDate, setStartDate] = useState<string | undefined>(undefined)
+  const [endDate, setEndDate] = useState<string | undefined>(undefined)
 
   const documentLines = 20
 
-  const handleChangeSelect = (event: any) => {
-    setSelectedDocTypes(event.target.value)
-  }
-
-  const handleOpenDialog = () => {
-    setOpen(true)
-  }
-
-  const handleCloseDialog = () => {
-    setOpen(false)
-    handleChangePage()
-  }
-
-  const handleChangeInput = (event: any) => {
-    setSearchInput(event.target.value)
-  }
-
-  const handleChangeNdaInput = (event: any) => {
-    setNda(event.target.value)
-  }
-
-  const handleChangePage = (event?: any, value: number = 1) => {
-    setPage(value)
+  const onSearchDocument = (page = 1) => {
+    if (searchInput !== '') {
+      setSearchMode(true)
+    } else {
+      setSearchMode(false)
+    }
     setLoadingStatus(true)
-    fetchDocuments(value, searchInput, selectedDocTypes, nda, groupId)
+    fetchDocuments(
+      deidentifiedBoolean,
+      page,
+      searchInput,
+      selectedDocTypes,
+      nda,
+      startDate,
+      endDate,
+      groupId,
+      encounters?.map((encounter) => encounter.id ?? '').filter((id) => id !== '')
+    )
       .then((result) => {
         if (result) {
           const {
             totalDocs,
             totalAllDocs,
-            documentsList,
-            wordcloudData
+            documentsList
+            // wordcloudData
           } = result
           setDocuments(documentsList)
-          if (wordcloudData) {
-            setWordcloudData(wordcloudData)
-          }
+          // if (wordcloudData) {
+          //   setWordcloudData(wordcloudData)
+          // }
           setDocumentsNumber(totalDocs)
           setAllDocumentsNumber(totalAllDocs)
+          setPage(page)
         }
       })
       .catch((error) => console.log(error))
@@ -96,13 +96,17 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
       })
   }
 
-  const onSearchDocument = () => {
-    if (searchInput !== '') {
-      setSearchMode(true)
-    } else {
-      setSearchMode(false)
-    }
-    handleChangePage(1)
+  const handleOpenDialog = () => {
+    setOpen(true)
+  }
+
+  const handleCloseDialog = (submit: boolean) => () => {
+    setOpen(false)
+    submit && onSearchDocument()
+  }
+
+  const handleChangeInput = (event: any) => {
+    setSearchInput(event.target.value)
   }
 
   const onKeyDown = async (e: any) => {
@@ -113,8 +117,11 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
   }
 
   useEffect(() => {
-    handleChangePage(0)
+    onSearchDocument()
   }, []) // eslint-disable-line
+
+  const documentsToDisplay =
+    documents.length > documentLines ? documents.slice((page - 1) * documentLines, page * documentLines) : documents
 
   return (
     <Grid container direction="column" alignItems="center">
@@ -124,7 +131,7 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
           Documents cliniques
         </Typography>
 
-        <Grid container spacing={3}>
+        {/* <Grid container spacing={3}>
           <Grid item xs={12}>
             {wordcloudData && (
               <Paper className={classes.chartOverlay}>
@@ -133,12 +140,11 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
                     Mots les plus fréquents
                   </Typography>
                 </Grid>
-                {/* @ts-ignore */}
                 <WordCloud wordcloudData={wordcloudData?.[0]?.extension} />
               </Paper>
             )}
-          </Grid>
-        </Grid>
+          </Grid> 
+        </Grid>*/}
 
         <Grid container item justify="flex-end" className={classes.tableGrid}>
           <Grid container justify="space-between" alignItems="center">
@@ -146,13 +152,7 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
               {documentsNumber} / {allDocumentsNumber} document(s)
             </Typography>
             <div className={classes.documentButtons}>
-              <Grid
-                item
-                container
-                xs={10}
-                alignItems="center"
-                className={classes.searchBar}
-              >
+              <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
                 <InputBase
                   placeholder="Rechercher"
                   className={classes.input}
@@ -160,21 +160,14 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
                   onChange={handleChangeInput}
                   onKeyDown={onKeyDown}
                 />
-                <IconButton
-                  type="submit"
-                  aria-label="search"
-                  onClick={onSearchDocument}
-                >
+                <IconButton type="submit" aria-label="search" onClick={() => onSearchDocument()}>
                   <SearchIcon fill="#ED6D91" height="15px" />
                 </IconButton>
               </Grid>
               <IconButton type="submit" onClick={() => setHelpOpen(true)}>
                 <InfoIcon />
               </IconButton>
-              <DocumentSearchHelp
-                open={helpOpen}
-                onClose={() => setHelpOpen(false)}
-              />
+              <DocumentSearchHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
               <Button
                 variant="contained"
                 disableElevation
@@ -188,25 +181,38 @@ const Documents: React.FC<DocumentsProps> = ({ groupId }) => {
           </Grid>
           <DocumentList
             loading={loadingStatus ?? false}
-            documents={documents}
+            documents={documentsToDisplay}
             searchMode={searchMode}
             showIpp={true}
+            deidentified={deidentifiedBoolean}
+            encounters={encounters}
           />
           <Pagination
             className={classes.pagination}
-            count={Math.ceil(documentsNumber ?? 0 / documentLines)}
+            count={Math.ceil((documentsNumber ?? 0) / documentLines)}
             shape="rounded"
-            onChange={handleChangePage}
+            onChange={(event, page) => {
+              if (documents.length <= documentLines) {
+                onSearchDocument(page)
+              } else {
+                setPage(page)
+              }
+            }}
             page={page}
           />
           <DocumentFilters
             open={open}
-            onClose={() => setOpen(false)}
-            onSubmit={handleCloseDialog}
+            onClose={handleCloseDialog(false)}
+            onSubmit={handleCloseDialog(true)}
             nda={nda}
-            onChangeNda={handleChangeNdaInput}
+            onChangeNda={setNda}
             selectedDocTypes={selectedDocTypes}
-            onChangeSelectedDocTypes={handleChangeSelect}
+            onChangeSelectedDocTypes={setSelectedDocTypes}
+            startDate={startDate}
+            onChangeStartDate={setStartDate}
+            endDate={endDate}
+            onChangeEndDate={setEndDate}
+            deidentified={deidentifiedBoolean}
           />
         </Grid>
       </Grid>

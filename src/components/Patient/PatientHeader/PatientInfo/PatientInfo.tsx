@@ -4,7 +4,7 @@ import { Grid, Typography } from '@material-ui/core'
 
 import { ReactComponent as FemaleIcon } from '../../../../assets/icones/venus.svg'
 import { ReactComponent as MaleIcon } from '../../../../assets/icones/mars.svg'
-import UnknownIcon from '@material-ui/icons/HelpOutline'
+import { ReactComponent as UnknownIcon } from '../../../../assets/icones/autre-inconnu.svg'
 
 import useStyles from './styles'
 import { PatientGenderKind } from '@ahryman40k/ts-fhir-types/lib/R4'
@@ -28,30 +28,18 @@ const GenderIcon: React.FC<GenderIconTypes> = ({ gender }) => {
 type PatientInfoTypes = {
   gender?: PatientGenderKind
   age: React.ReactText
-  deidentified: boolean
   ipp?: string
 }
-const PatientInfo: React.FC<PatientInfoTypes> = ({
-  gender,
-  age,
-  deidentified,
-  ipp
-}) => {
+const PatientInfo: React.FC<PatientInfoTypes> = ({ gender, age, ipp }) => {
   const classes = useStyles()
 
   return (
     <Grid direction="column" className={classes.root} container={true}>
-      <Grid
-        container
-        item
-        justify="center"
-        alignItems="center"
-        className={classes.whiteCircle}
-      >
+      <Grid container item justify="center" alignItems="center" className={classes.whiteCircle}>
         <GenderIcon gender={gender} />
       </Grid>
       <Typography variant="body1">{age}</Typography>
-      {!deidentified && <Typography variant="body1">IPP : {ipp}</Typography>}
+      <Typography variant="body1">{ipp}</Typography>
     </Grid>
   )
 }

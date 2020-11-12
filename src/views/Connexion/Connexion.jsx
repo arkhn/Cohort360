@@ -20,10 +20,11 @@ import { authenticate } from '../../services/authentication'
 import { ACCES_TOKEN, REFRESH_TOKEN } from '../../constants'
 import useStyles from './styles'
 import { fetchPractitioner } from '../../services/practitioner'
+import { fetchDeidentified } from 'services/deidentification'
 
 const ErrorDialog = ({ open, setErrorLogin }) => {
   const _setErrorLogin = () => {
-    if (setErrorLogin && typeof setErrorLogin === "function") {
+    if (setErrorLogin && typeof setErrorLogin === 'function') {
       setErrorLogin(false)
     }
   }
@@ -31,9 +32,7 @@ const ErrorDialog = ({ open, setErrorLogin }) => {
   return (
     <Dialog open={open}>
       <DialogContent>
-        <DialogContentText>
-          Votre code APH ou votre mot de passe est incorrect
-        </DialogContentText>
+        <DialogContentText>Votre code APH ou votre mot de passe est incorrect</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={_setErrorLogin}>Ok</Button>
@@ -44,8 +43,8 @@ const ErrorDialog = ({ open, setErrorLogin }) => {
 
 const LegalMentionDialog = ({ open, setOpen }) => {
   const _setOpen = () => {
-    if (setOpen && typeof setOpen === "function") {
-      setOpen(false);
+    if (setOpen && typeof setOpen === 'function') {
+      setOpen(false)
     }
   }
 
@@ -54,26 +53,19 @@ const LegalMentionDialog = ({ open, setOpen }) => {
       <DialogTitle>Mention légale</DialogTitle>
       <DialogContent>
         <DialogContentText align="justify">
-          L’usage de Cohort360 est soumis au respect des règles
-          d’accès aux données de santé définies par la Commission
-          Médicale d’Etablissement de l’AP-HP disponibles à l’adresse
-          recherche-innovation.aphp.fr.
+          L’usage de Cohort360 est soumis au respect des règles d’accès aux données de santé définies par la Commission
+          Médicale d’Etablissement de l’AP-HP disponibles à l’adresse recherche-innovation.aphp.fr.
         </DialogContentText>
         <DialogContentText>
-          En appuyant sur le bouton « OK », vous acceptez ces
-          conditions d’utilisation. Les données relatives à votre
-          connexion et à vos actions sur l’application (date, heure,
-          type d’action), sont enregistrées et traitées pour des
-          finalités de sécurité du système d’information et afin de
-          réaliser des statistiques d’utilisation de l’application.
+          En appuyant sur le bouton « OK », vous acceptez ces conditions d’utilisation. Les données relatives à votre
+          connexion et à vos actions sur l’application (date, heure, type d’action), sont enregistrées et traitées pour
+          des finalités de sécurité du système d’information et afin de réaliser des statistiques d’utilisation de
+          l’application.
         </DialogContentText>
         <DialogContentText>
-          Elles sont destinées à l’équipe projet de la DSI et sont
-          conservées dans des fichiers de logs pendant 3 ans. Vous
-          pouvez exercer votre droit d’accès et de rectification aux
-          informations qui vous concernent, en écrivant à la déléguée
-          à la protection des données de l’AP-HP à l’adresse
-          protection.donnees.dsi@aphp.fr.
+          Elles sont destinées à l’équipe projet de la DSI et sont conservées dans des fichiers de logs pendant 3 ans.
+          Vous pouvez exercer votre droit d’accès et de rectification aux informations qui vous concernent, en écrivant
+          à la déléguée à la protection des données de l’AP-HP à l’adresse protection.donnees.dsi@aphp.fr.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -92,10 +84,22 @@ const Login = () => {
   const [errorLogin, setErrorLogin] = useState(false)
   const [open, setOpen] = useState(false)
 
+  const getPractitionerData = async () => {
+    const practitioner = await fetchPractitioner(username)
+    const deidentifiedBoolean = await fetchDeidentified()
+
+    if (practitioner) {
+      dispatch(loginAction({ ...practitioner, deidentified: deidentifiedBoolean }))
+      history.push('/accueil')
+    } else {
+      setErrorLogin(true)
+    }
+  }
+
   const login = async () => {
     try {
       if (!username || !password) return setErrorLogin(true)
-      
+
       const response = await authenticate(username, password)
       if (!response) return setErrorLogin(true)
 
@@ -113,17 +117,6 @@ const Login = () => {
     }
   }
 
-  const getPractitionerData = async () => {
-    const practitioner = await fetchPractitioner(username)
-
-    if (practitioner) {
-      dispatch(loginAction(practitioner))
-      history.push('/accueil')
-    } else {
-      setErrorLogin(true)
-    }
-  }
-
   const _onSubmit = (e) => {
     e.preventDefault()
     login()
@@ -134,16 +127,26 @@ const Login = () => {
       <Grid container component="main" className={classes.root}>
         <Grid item xs={false} sm={6} md={6} className={classes.image} />
 
-        <Grid container item xs={12} sm={6} md={6} elevation={6} direction="column" justify="center" alignItems="center" className={classes.rightPanel}>
+        <Grid
+          container
+          item
+          xs={12}
+          sm={6}
+          md={6}
+          elevation={6}
+          direction="column"
+          justify="center"
+          alignItems="center"
+          className={classes.rightPanel}
+        >
           <Grid container item xs={8} lg={6} direction="column" alignItems="center">
-
             <img className={classes.logo} src={logo} alt="Logo Cohort360" />
 
             <Typography color="primary" className={classes.bienvenue}>
               Bienvenue ! Connectez-vous.
             </Typography>
 
-            <form className={classes.form} noValidate onSubmit={_onSubmit} >
+            <form className={classes.form} noValidate onSubmit={_onSubmit}>
               <Grid container item direction="column" alignItems="center">
                 <TextField
                   variant="outlined"
@@ -177,7 +180,14 @@ const Login = () => {
                   </Link>
                 </Typography>
 
-                <Button disabled={!username || !password} type="submit" fullWidth variant="contained" color="primary" className={classes.submit}>
+                <Button
+                  disabled={!username || !password}
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  className={classes.submit}
+                >
                   Connexion
                 </Button>
               </Grid>
@@ -186,7 +196,6 @@ const Login = () => {
                 <Footer />
               </Box>
             </form>
-
           </Grid>
         </Grid>
       </Grid>

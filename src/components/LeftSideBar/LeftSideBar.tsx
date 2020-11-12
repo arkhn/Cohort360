@@ -105,11 +105,7 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
           }}
         >
           <div className={classes.toolbar}>
-            <img
-              src={cohortLogo}
-              alt="Cohort360 logo"
-              className={open ? undefined : classes.hide}
-            />
+            <img src={cohortLogo} alt="Cohort360 logo" className={open ? undefined : classes.hide} />
             <IconButton
               onClick={handleDrawerClose}
               className={clsx(classes.closeDrawerButton, {
@@ -131,17 +127,11 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
           <Divider />
           <List>
             <ListItem>
-              <Grid
-                container
-                justify="space-between"
-                alignItems="center"
-                wrap="nowrap"
-              >
+              <Grid container justify="space-between" alignItems="center" wrap="nowrap">
                 <Grid container wrap="nowrap" xs={10} alignItems="center">
                   <ListItemIcon className={classes.listIcon}>
                     <div className={classes.avatar}>
-                      {practitioner &&
-                        `${practitioner.firstName[0]}${practitioner.lastName[0]}`}
+                      {practitioner && `${practitioner.firstName[0]}${practitioner.lastName[0]}`}
                     </div>
                   </ListItemIcon>
                   <Typography variant="h3" noWrap className={classes.userName}>
@@ -185,14 +175,9 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
               </ListItemIcon>
               <Button
                 onClick={() => history.push('/cohort/new')}
-                className={clsx(
-                  classes.linkHover,
-                  classes.newCohortButton,
-                  classes.searchButton,
-                  {
-                    [classes.hide]: !open
-                  }
-                )}
+                className={clsx(classes.linkHover, classes.newCohortButton, classes.searchButton, {
+                  [classes.hide]: !open
+                })}
               >
                 <Typography variant="h5">Nouvelle Cohorte</Typography>
               </Button>
@@ -209,18 +194,9 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
               <ListItemIcon className={classes.listIcon}>
                 <PatientIcon width="20px" fill="#FFF" />
               </ListItemIcon>
-              <Grid
-                container
-                justify="space-between"
-                alignItems="center"
-                wrap="nowrap"
-              >
+              <Grid container justify="space-between" alignItems="center" wrap="nowrap">
                 <Typography className={classes.title}>Mes patients</Typography>
-                {list ? (
-                  <ExpandLess color="action" />
-                ) : (
-                  <ExpandMore color="action" />
-                )}
+                {list ? <ExpandLess color="action" /> : <ExpandMore color="action" />}
               </Grid>
             </ListItem>
             <Collapse
@@ -234,14 +210,13 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
               unmountOnExit
             >
               <List>
-                <ListItem>
-                  <Link
-                    href="/rechercher_patient"
-                    className={classes.nestedTitle}
-                  >
-                    Rechercher un patient
-                  </Link>
-                </ListItem>
+                {!practitioner?.deidentified && (
+                  <ListItem>
+                    <Link href="/rechercher_patient" className={classes.nestedTitle}>
+                      Rechercher un patient
+                    </Link>
+                  </ListItem>
+                )}
                 <ListItem>
                   <Link href="/mes_patients" className={classes.nestedTitle}>
                     Tous mes patients
@@ -258,20 +233,9 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
               <ListItemIcon className={classes.listIcon}>
                 <ResearchIcon width="20px" fill="#FFF" />
               </ListItemIcon>
-              <Grid
-                container
-                justify="space-between"
-                alignItems="center"
-                wrap="nowrap"
-              >
-                <Typography className={classes.title}>
-                  Mes recherches
-                </Typography>
-                {list2 ? (
-                  <ExpandLess color="action" />
-                ) : (
-                  <ExpandMore color="action" />
-                )}
+              <Grid container justify="space-between" alignItems="center" wrap="nowrap">
+                <Typography className={classes.title}>Mes recherches</Typography>
+                {list2 ? <ExpandLess color="action" /> : <ExpandMore color="action" />}
               </Grid>
             </ListItem>
             <Collapse
@@ -282,10 +246,7 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
             >
               <List>
                 <ListItem>
-                  <Link
-                    href="/recherche_sauvegarde"
-                    className={classes.nestedTitle}
-                  >
+                  <Link href="/recherche_sauvegarde" className={classes.nestedTitle}>
                     Recherches sauvegardées
                   </Link>
                 </ListItem>

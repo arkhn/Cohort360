@@ -2,7 +2,7 @@ import {
   PatientGenderKind,
   IPatient,
   IEncounter,
-  IExtension,
+  IExtension
   // IReference
 } from '@ahryman40k/ts-fhir-types/lib/R4'
 import { getAgeArkhn } from './age'
@@ -10,9 +10,9 @@ import { Month, ComplexChartDataType, SimpleChartDataType } from 'types'
 import { getStringMonth, getStringMonthAphp } from './formatDate'
 
 function getRandomColor() {
-  var letters = '0123456789ABCDEF'
-  var color = '#'
-  for (var i = 0; i < 6; i++) {
+  const letters = '0123456789ABCDEF'
+  let color = '#'
+  for (let i = 0; i < 6; i++) {
     color += letters[Math.floor(Math.random() * 16)]
   }
   return color
@@ -64,9 +64,7 @@ const getVisitTypeColor = (visitType?: string) => {
   return color
 }
 
-export const getGenderRepartitionMapAphp = (
-  facet?: IExtension[]
-): ComplexChartDataType<PatientGenderKind> => {
+export const getGenderRepartitionMapAphp = (facet?: IExtension[]): ComplexChartDataType<PatientGenderKind> => {
   const repartitionMap = new Map()
 
   repartitionMap.set('female', { deceased: 0, alive: 0 })
@@ -132,9 +130,7 @@ export const getGenderRepartitionMap = (
   return repartitionMap
 }
 
-export const getEncounterRepartitionMapAphp = (
-  extension?: IExtension[]
-): SimpleChartDataType[] => {
+export const getEncounterRepartitionMapAphp = (extension?: IExtension[]): SimpleChartDataType[] => {
   const data: SimpleChartDataType[] = []
 
   extension?.forEach((visitType) => {
@@ -148,15 +144,11 @@ export const getEncounterRepartitionMapAphp = (
   return data
 }
 
-export const getEncounterRepartitionMap = (
-  encounters: IEncounter[]
-): SimpleChartDataType[] => {
+export const getEncounterRepartitionMap = (encounters: IEncounter[]): SimpleChartDataType[] => {
   const data: SimpleChartDataType[] = []
 
   encounters.forEach((encounter) => {
-    let encounterDataIndex = data.findIndex(
-      (d) => d.label === encounter.class.code
-    )
+    let encounterDataIndex = data.findIndex((d) => d.label === encounter.class.code)
     if (encounter.class.code && encounterDataIndex === -1) {
       encounterDataIndex = data.length
       data.push({
@@ -176,10 +168,7 @@ export const getEncounterRepartitionMap = (
 
 export const getAgeRepartitionMapAphp = (
   facet?: IExtension[]
-): ComplexChartDataType<
-  number,
-  { male: number; female: number; other?: number }
-> => {
+): ComplexChartDataType<number, { male: number; female: number; other?: number }> => {
   const repartitionMap = new Map()
 
   facet?.forEach((extension) => {
@@ -220,19 +209,14 @@ export const getAgeRepartitionMapAphp = (
 
 export const getAgeRepartitionMap = (
   patients: IPatient[]
-): ComplexChartDataType<
-  number,
-  { male: number; female: number; other?: number }
-> => {
+): ComplexChartDataType<number, { male: number; female: number; other?: number }> => {
   const repartitionMap = new Map()
 
   patients.forEach((patient) => {
     if (patient.birthDate) {
       const age = getAgeArkhn(
         new Date(patient.birthDate),
-        patient.deceasedDateTime
-          ? new Date(patient.deceasedDateTime)
-          : new Date()
+        patient.deceasedDateTime ? new Date(patient.deceasedDateTime) : new Date()
       )
       if (!repartitionMap.has(age)) {
         repartitionMap.set(age, { male: 0, female: 0, other: 0 })
@@ -254,9 +238,7 @@ export const getAgeRepartitionMap = (
   return repartitionMap
 }
 
-export const getVisitRepartitionMapAphp = (
-  facet?: IExtension[]
-): ComplexChartDataType<Month> => {
+export const getVisitRepartitionMapAphp = (facet?: IExtension[]): ComplexChartDataType<Month> => {
   const repartitionMap = new Map()
 
   facet?.forEach((object) => {
@@ -298,21 +280,12 @@ export const getVisitRepartitionMapAphp = (
   return repartitionMap
 }
 
-export const getVisitRepartitionMap = (
-  patients: IPatient[],
-  encounters: IEncounter[]
-): ComplexChartDataType<Month> => {
+export const getVisitRepartitionMap = (patients: IPatient[], encounters: IEncounter[]): ComplexChartDataType<Month> => {
   const repartitionMap = new Map()
 
   encounters.forEach((encounter) => {
-    if (
-      encounter.subject?.reference &&
-      encounter.period &&
-      encounter.period.start
-    ) {
-      const patient = patients.find(
-        (p) => encounter.subject?.reference === `Patient/${p.id}`
-      )
+    if (encounter.subject?.reference && encounter.period && encounter.period.start) {
+      const patient = patients.find((p) => encounter.subject?.reference === `Patient/${p.id}`)
       const month = new Date(encounter.period.start).getMonth()
       const monthStr = getStringMonth(month)
       if (monthStr && patient) {

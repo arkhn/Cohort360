@@ -30,9 +30,7 @@ const Perimetre: React.FC<{}> = () => {
   const [selectedTab, selectTab] = useState(tabName || 'apercu')
   const [loading, setLoading] = useState(true)
   const [openRedcapDialog, setOpenRedcapDialog] = useState(false)
-  const [deidentifiedBoolean, setDeidentifiedBoolean] = useState<
-    boolean | undefined
-  >(true)
+  const [deidentifiedBoolean, setDeidentifiedBoolean] = useState<boolean>(true)
 
   const { open, myPerimetre } = useAppSelector((state) => ({
     open: state.drawer,
@@ -51,9 +49,8 @@ const Perimetre: React.FC<{}> = () => {
           dispatch(setExploredCohort(cohortResp))
           if (cohortResp.originalPatients?.[0]) {
             setDeidentifiedBoolean(
-              cohortResp.originalPatients?.[0].extension?.filter(
-                (data) => data.url === 'deidentified'
-              )?.[0].valueBoolean
+              cohortResp.originalPatients?.[0].extension?.filter((data) => data.url === 'deidentified')?.[0]
+                .valueBoolean ?? true
             )
           }
         }
@@ -151,9 +148,7 @@ const Perimetre: React.FC<{}> = () => {
                   name: 'Exploration de périmètres',
                   perimeters:
                     myPerimetre.cohort && Array.isArray(myPerimetre.cohort)
-                      ? myPerimetre.cohort.map((p: any) =>
-                          p.name.replace('Patients passés par: ', '')
-                        )
+                      ? myPerimetre.cohort.map((p: any) => p.name.replace('Patients passés par: ', ''))
                       : []
                 }}
                 agePyramidData={myPerimetre.agePyramidData}
@@ -173,7 +168,7 @@ const Perimetre: React.FC<{}> = () => {
               />
             )}
             {selectedTab === 'documents' && (
-              <PerimetersDocuments groupId={perimetreIds} />
+              <PerimetersDocuments groupId={perimetreIds} deidentifiedBoolean={deidentifiedBoolean} />
             )}
           </>
         )}

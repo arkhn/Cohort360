@@ -23,28 +23,12 @@ const PatientDocs = ({ patientId, documents }) => {
     setPage(value)
   }
   return (
-    <Grid
-      container
-      item
-      xs={11}
-      justify="flex-end"
-      className={classes.documentTable}
-    >
+    <Grid container item xs={11} justify="flex-end" className={classes.documentTable}>
       <div className={classes.documentButtons}>
-        <Grid
-          item
-          container
-          xs={10}
-          alignItems="center"
-          className={classes.searchBar}
-        >
+        <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
           <InputBase placeholder="Rechercher" className={classes.input} />
           <IconButton type="submit" aria-label="search">
-            <SearchIcon
-              className={classes.searchIcon}
-              fill="#ED6D91"
-              height="15px"
-            />
+            <SearchIcon className={classes.searchIcon} fill="#ED6D91" height="15px" />
           </IconButton>
         </Grid>
         <Button
@@ -56,11 +40,7 @@ const PatientDocs = ({ patientId, documents }) => {
           Filtrer
         </Button>
       </div>
-      <DocumentTable
-        documentLines={documentLines}
-        documents={documents}
-        page={page}
-      />
+      <DocumentTable documentLines={documentLines} documents={documents} page={page} />
       <Pagination
         className={classes.pagination}
         count={Math.ceil(documents.length / documentLines)}

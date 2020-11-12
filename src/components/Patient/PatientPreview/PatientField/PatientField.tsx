@@ -9,10 +9,7 @@ type PatientFieldProps = {
   fieldName: string
   fieldValue?: string | number
 }
-const PatientField: React.FC<PatientFieldProps> = ({
-  fieldName,
-  fieldValue
-}) => {
+const PatientField: React.FC<PatientFieldProps> = ({ fieldName, fieldValue }) => {
   const classes = useStyles()
 
   return (
@@ -27,14 +24,7 @@ const PatientField: React.FC<PatientFieldProps> = ({
       >
         <Typography variant="h6">{fieldName}</Typography>
       </Grid>
-      <Grid
-        item
-        container
-        xs={9}
-        lg={10}
-        alignItems="center"
-        className={classes.gridItem}
-      >
+      <Grid item container xs={9} lg={10} alignItems="center" className={classes.gridItem}>
         <Typography>{fieldValue ?? 'unknown'}</Typography>
       </Grid>
     </Grid>

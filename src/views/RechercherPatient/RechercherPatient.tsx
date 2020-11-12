@@ -24,6 +24,8 @@ const RechercherPatient: React.FC<{}> = () => {
   const [showTable, setShowTable] = useState(false)
   const [patientResults, setPatientResults] = useState<IPatient[]>([])
   const [loading, setLoading] = useState(false)
+  const [sortBy, setSortBy] = useState('given') // eslint-disable-line
+  // const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [page, setPage] = useState(1)
 
   const performQueries = (input: string, searchBy = SearchByTypes.text) => {
@@ -37,10 +39,7 @@ const RechercherPatient: React.FC<{}> = () => {
     })
   }
 
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    page: number
-  ) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setPage(page)
   }
 
@@ -81,6 +80,8 @@ const RechercherPatient: React.FC<{}> = () => {
               onChangePage={handlePageChange}
               page={page}
               totalPatientCount={patientResults.length}
+              sortBy={sortBy}
+              sortDirection={'asc'}
             />
           )}
         </Grid>

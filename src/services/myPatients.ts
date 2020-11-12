@@ -1,16 +1,7 @@
 import api from './api'
 import { CONTEXT, API_RESOURCE_TAG } from '../constants'
-import {
-  IComposition,
-  IPatient,
-  IEncounter
-} from '@ahryman40k/ts-fhir-types/lib/R4'
-import {
-  CohortComposition,
-  CohortPatient,
-  FHIR_API_Response,
-  CohortData
-} from '../types'
+import { IComposition, IPatient, IEncounter, IIdentifier } from '@ahryman40k/ts-fhir-types/lib/R4'
+import { CohortComposition, CohortPatient, FHIR_API_Response, CohortData } from '../types'
 import { getApiResponseResources } from 'utils/apiHelpers'
 import {
   getGenderRepartitionMap,
@@ -23,120 +14,43 @@ import {
   getVisitRepartitionMapAphp
 } from 'utils/graphUtils'
 
-export const fetchMyPatients = async (): Promise<CohortData | undefined> => {
-  if (CONTEXT === 'aphp') {
-    const [myPatientsResp, myPatientsEncounters] = await Promise.all([
-      api.get<FHIR_API_Response<IPatient>>(
-        '/Patient?pivotFacet=age_gender,deceased_gender&size=20'
-      ),
-      api.get<FHIR_API_Response<IEncounter>>(
-        '/Encounter?pivotFacet=start-date_start-date-month_gender&facet=class&size=1'
-      )
-    ])
-
-    const totalPatients =
-      myPatientsResp.data.resourceType === 'Bundle'
-        ? myPatientsResp.data.total
-        : 0
-
-    const originalPatients = await getLastEncounter(
-      getApiResponseResources(myPatientsResp)
-    )
-
-    const agePyramidData =
-      myPatientsResp.data.resourceType === 'Bundle'
-        ? await getAgeRepartitionMapAphp(
-            myPatientsResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-age-month'
-            )?.[0].extension
-          )
-        : undefined
-
-    const genderRepartitionMap =
-      myPatientsResp.data.resourceType === 'Bundle'
-        ? await getGenderRepartitionMapAphp(
-            myPatientsResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-deceased'
-            )?.[0].extension
-          )
-        : undefined
-
-    const monthlyVisitData =
-      myPatientsEncounters.data.resourceType === 'Bundle'
-        ? await getVisitRepartitionMapAphp(
-            myPatientsEncounters.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-start-date-facet'
-            )?.[0].extension
-          )
-        : undefined
-
-    const visitTypeRepartitionData =
-      myPatientsEncounters.data.resourceType === 'Bundle'
-        ? await getEncounterRepartitionMapAphp(
-            myPatientsEncounters.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-class-simple'
-            )?.[0].extension
-          )
-        : undefined
-
-    return {
-      totalPatients,
-      originalPatients,
-      // totalDocs,
-      // documentsList,
-      // wordcloudData,
-      genderRepartitionMap,
-      visitTypeRepartitionData,
-      agePyramidData,
-      monthlyVisitData
-    }
+const getPatientInfos = async (deidentifiedBoolean: boolean, documents?: IComposition[]) => {
+  if (!documents) {
+    return []
   }
+  const cohortDocuments = documents as CohortComposition[]
 
-  if (CONTEXT === 'arkhn') {
-    const cohortData: CohortData = {
-      name: 'Mes Patients'
-    }
-    const patients = getApiResponseResources(
-      await api.get<FHIR_API_Response<IPatient>>(
-        `/Patient?_count=700${API_RESOURCE_TAG}`
-      )
-    )
+  const listePatientsIds = cohortDocuments.map((e) => e.subject?.display?.substring(8)).join()
 
-    if (patients && patients.length > 0) {
-      cohortData.totalPatients = patients.length
-      cohortData.originalPatients = patients
-      cohortData.agePyramidData = getAgeRepartitionMap(patients)
-      cohortData.genderRepartitionMap = getGenderRepartitionMap(patients)
-
-      const patientsIds = patients.map((p) => p.id ?? '').filter(Boolean)
-      const encounters = getApiResponseResources(
-        await api.get<FHIR_API_Response<IEncounter>>(
-          `/Encounter?subject:Patient=${patientsIds.join(
-            ','
-          )}&_count=700${API_RESOURCE_TAG}`
-        )
-      )
-      if (encounters) {
-        cohortData.encounters = encounters
-        cohortData.monthlyVisitData = getVisitRepartitionMap(
-          patients,
-          encounters
-        )
-        cohortData.visitTypeRepartitionData = getEncounterRepartitionMap(
-          encounters
-        )
-      }
-    }
-    return cohortData
-  }
-}
-
-export const getInfos = async (documents?: IComposition[]) => {
-  const docsComplets = await getPatientInfos(documents).then(
-    async (docs) => await getEncounterInfos(docs)
+  const patients = await api.get<FHIR_API_Response<IPatient>>(
+    `/Patient?_id=${listePatientsIds}&_elements=extension,id,identifier`
   )
 
-  return docsComplets
+  let listePatients = []
+  if (patients.data.resourceType === 'Bundle' && patients.data.entry) {
+    listePatients = patients?.data?.entry.map((e: any) => e.resource)
+  }
+
+  for (const document of cohortDocuments) {
+    for (const patient of listePatients) {
+      if (document.subject?.display?.substring(8) === patient.id) {
+        document.idPatient = patient.id
+
+        if (deidentifiedBoolean) {
+          document.IPP = patient.id
+        } else if (patient.identifier) {
+          const ipp = patient.identifier.find((identifier: IIdentifier) => {
+            return identifier.type?.coding?.[0].code === 'IPP'
+          })
+          document.IPP = ipp.value
+        } else {
+          document.IPP = 'Inconnu'
+        }
+      }
+    }
+  }
+
+  return cohortDocuments
 }
 
 export const getLastEncounter = async (patients?: IPatient[]) => {
@@ -156,11 +70,7 @@ export const getLastEncounter = async (patients?: IPatient[]) => {
 
   const encountersVisits = encounters
     .map((encounter) => getApiResponseResources(encounter))
-    .filter((encounter) => {
-      if (encounter) {
-        return encounter.length > 0
-      }
-    })
+    .filter((encounter) => encounter && encounter.length > 0)
 
   for (const patient of cohortPatients) {
     for (const encounter of encountersVisits) {
@@ -176,113 +86,138 @@ export const getLastEncounter = async (patients?: IPatient[]) => {
   return cohortPatients
 }
 
-const getEncounterInfos = async (documents?: IComposition[]) => {
-  if (!documents) {
-    return []
+export const fetchMyPatients = async (): Promise<CohortData | undefined> => {
+  if (CONTEXT === 'aphp') {
+    const [myPatientsResp, myPatientsEncounters] = await Promise.all([
+      api.get<FHIR_API_Response<IPatient>>('/Patient?pivotFacet=age_gender,deceased_gender&size=20'),
+      api.get<FHIR_API_Response<IEncounter>>(
+        '/Encounter?pivotFacet=start-date_start-date-month_gender&facet=class&size=1'
+      )
+    ])
+
+    const totalPatients = myPatientsResp.data.resourceType === 'Bundle' ? myPatientsResp.data.total : 0
+
+    const originalPatients = await getLastEncounter(getApiResponseResources(myPatientsResp))
+
+    const agePyramidData =
+      myPatientsResp.data.resourceType === 'Bundle'
+        ? await getAgeRepartitionMapAphp(
+            myPatientsResp.data.meta?.extension?.filter((facet: any) => facet.url === 'facet-age-month')?.[0].extension
+          )
+        : undefined
+
+    const genderRepartitionMap =
+      myPatientsResp.data.resourceType === 'Bundle'
+        ? await getGenderRepartitionMapAphp(
+            myPatientsResp.data.meta?.extension?.filter((facet: any) => facet.url === 'facet-deceased')?.[0].extension
+          )
+        : undefined
+
+    const monthlyVisitData =
+      myPatientsEncounters.data.resourceType === 'Bundle'
+        ? await getVisitRepartitionMapAphp(
+            myPatientsEncounters.data.meta?.extension?.filter(
+              (facet: any) => facet.url === 'facet-start-date-facet'
+            )?.[0].extension
+          )
+        : undefined
+
+    const visitTypeRepartitionData =
+      myPatientsEncounters.data.resourceType === 'Bundle'
+        ? await getEncounterRepartitionMapAphp(
+            myPatientsEncounters.data.meta?.extension?.filter((facet: any) => facet.url === 'facet-class-simple')?.[0]
+              .extension
+          )
+        : undefined
+
+    return {
+      totalPatients,
+      originalPatients,
+      genderRepartitionMap,
+      visitTypeRepartitionData,
+      agePyramidData,
+      monthlyVisitData
+    }
   }
 
-  const cohortDocuments = documents as CohortComposition[]
-  var listeEncounterIds = cohortDocuments
-    .map((e) => e.encounter?.display?.substring(10))
-    .join()
+  if (CONTEXT === 'arkhn') {
+    const cohortData: CohortData = {
+      name: 'Mes Patients'
+    }
+    const patients = getApiResponseResources(
+      await api.get<FHIR_API_Response<IPatient>>(`/Patient?_count=700${API_RESOURCE_TAG}`)
+    )
 
-  let itemsProcessed = 0
+    if (patients && patients.length > 0) {
+      cohortData.totalPatients = patients.length
+      cohortData.originalPatients = patients
+      cohortData.agePyramidData = getAgeRepartitionMap(patients)
+      cohortData.genderRepartitionMap = getGenderRepartitionMap(patients)
 
-  const encounters = await api.get(`/Encounter?_id=${listeEncounterIds}`)
-
-  if (!encounters.data.entry) {
-    return []
-  }
-
-  var listeEncounters = encounters.data.entry.map((e: any) => e.resource)
-
-  for (var i = 0; i < cohortDocuments.length; i++) {
-    itemsProcessed++
-
-    for (var j = 0; j < listeEncounters.length; j++) {
-      if (
-        cohortDocuments[i].encounter?.display?.substring(10) ===
-        listeEncounters[j].id
-      ) {
-        cohortDocuments[i].encounterStatus = listeEncounters[j].status
-
-        if (!listeEncounters[j].serviceProvider) {
-          cohortDocuments[i].serviceProvider = 'Non renseigné'
-        } else {
-          cohortDocuments[i].serviceProvider =
-            listeEncounters[j].serviceProvider.display
-        }
-
-        if (!listeEncounters[j].identifier) {
-          cohortDocuments[i].NDA = 'Inconnu'
-        } else {
-          for (var k = 0; k < listeEncounters[j].identifier.length; k++) {
-            if (
-              listeEncounters[j].identifier[k].type.coding[0].code === 'NDA'
-            ) {
-              cohortDocuments[i].NDA = listeEncounters[j].identifier[k].value
-            }
-          }
-        }
+      const patientsIds = patients.map((p) => p.id ?? '').filter(Boolean)
+      const encounters = getApiResponseResources(
+        await api.get<FHIR_API_Response<IEncounter>>(
+          `/Encounter?subject:Patient=${patientsIds.join(',')}&_count=700${API_RESOURCE_TAG}`
+        )
+      )
+      if (encounters) {
+        cohortData.encounters = encounters
+        cohortData.monthlyVisitData = getVisitRepartitionMap(patients, encounters)
+        cohortData.visitTypeRepartitionData = getEncounterRepartitionMap(encounters)
       }
     }
-
-    if (itemsProcessed === cohortDocuments.length) {
-      return cohortDocuments
-    }
+    return cohortData
   }
-
-  return []
 }
 
-const getPatientInfos = async (documents?: IComposition[]) => {
+const getEncounterInfos = async (deidentifiedBoolean: boolean, documents?: IComposition[]) => {
   if (!documents) {
     return []
   }
+
   const cohortDocuments = documents as CohortComposition[]
-  let itemsProcessed = 0
+  const listeEncounterIds = cohortDocuments.map((e) => e.encounter?.display?.substring(10)).join()
 
-  var listePatientsIds = cohortDocuments
-    .map((e) => e.subject?.display?.substring(8))
-    .join()
+  const encounters = await api.get<FHIR_API_Response<IEncounter>>(`/Encounter?_id=${listeEncounterIds}`)
 
-  const patients = await api.get(
-    `/Patient?_id=${listePatientsIds}&_elements=extension,id,identifier`
-  )
+  if (encounters.data.resourceType !== 'Bundle' || !encounters.data.entry) {
+    return []
+  }
 
-  var listePatients = patients?.data?.entry
-    ? patients?.data?.entry.map((e: any) => e.resource)
-    : []
+  const listeEncounters = encounters.data.entry.map((e: any) => e.resource)
 
-  for (var i = 0; i < cohortDocuments.length; i++) {
-    itemsProcessed++
+  for (const document of cohortDocuments) {
+    for (const encounter of listeEncounters) {
+      if (document.encounter?.display?.substring(10) === encounter.id) {
+        document.encounterStatus = encounter.status
 
-    for (var j = 0; j < listePatients.length; j++) {
-      cohortDocuments[i].deidentified =
-        listePatients[j].extension[0].valueBoolean
-
-      if (
-        cohortDocuments[i].subject?.display?.substring(8) ===
-        listePatients[j].id
-      ) {
-        cohortDocuments[i].idPatient = listePatients[j].id
-
-        if (!listePatients[j].identifier) {
-          cohortDocuments[i].IPP = 'Inconnu'
+        if (encounter.serviceProvider) {
+          document.serviceProvider = encounter.serviceProvider.display
         } else {
-          for (var k = 0; k < listePatients[j].identifier.length; k++) {
-            if (listePatients[j].identifier[k].type.coding[0].code === 'IPP') {
-              cohortDocuments[i].IPP = listePatients[j].identifier[k].value
-            }
-          }
+          document.serviceProvider = 'Non renseigné'
+        }
+
+        if (deidentifiedBoolean) {
+          document.NDA = encounter.id
+        } else if (encounter.identifier) {
+          const nda = encounter.identifier.find((identifier: IIdentifier) => {
+            return identifier.type?.coding?.[0].code === 'NDA'
+          })
+          document.NDA = nda.value
+        } else {
+          document.NDA = 'Inconnu'
         }
       }
     }
-
-    if (itemsProcessed === cohortDocuments.length) {
-      return cohortDocuments
-    }
   }
 
-  return []
+  return cohortDocuments
+}
+
+export const getInfos = async (deidentifiedBoolean: boolean, documents?: IComposition[]) => {
+  const docsComplets = await getPatientInfos(deidentifiedBoolean, documents).then(
+    async (docs) => await getEncounterInfos(deidentifiedBoolean, docs)
+  )
+
+  return docsComplets
 }

@@ -27,11 +27,7 @@ import { fetchPMSI } from '../../../services/patient'
 
 import useStyles from './styles'
 import { PMSIEntry } from 'types'
-import {
-  IClaim,
-  ICondition,
-  IProcedure
-} from '@ahryman40k/ts-fhir-types/lib/R4'
+import { IClaim, ICondition, IProcedure } from '@ahryman40k/ts-fhir-types/lib/R4'
 
 type PatientPMSITypes = {
   patientId: string
@@ -41,6 +37,7 @@ type PatientPMSITypes = {
   ccamTotal: number
   ghm?: PMSIEntry<IClaim>[]
   ghmTotal: number
+  deidentifiedBoolean: boolean
 }
 const PatientPMSI: React.FC<PatientPMSITypes> = ({
   patientId,
@@ -49,12 +46,13 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
   ccam,
   ccamTotal,
   ghm,
-  ghmTotal
+  ghmTotal,
+  deidentifiedBoolean
 }) => {
   const classes = useStyles()
   const [selectedTab, selectTab] = useState<'CIM10' | 'CCAM' | 'GHM'>('CIM10')
   // TODO aphp: changed any to something more detailed
-  const [data, setData] = useState<PMSIEntry<any>[] | undefined>([])
+  const [data, setData] = useState<PMSIEntry<IClaim | ICondition | IProcedure>[] | undefined>([])
   const [loadingStatus, setLoadingStatus] = useState(false)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -62,8 +60,22 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
   const [open, setOpen] = useState(false)
   const [nda, setNda] = useState('')
   const [code, setCode] = useState('')
+  const [startDate, setStartDate] = useState<string | undefined>(undefined)
+  const [endDate, setEndDate] = useState<string | undefined>(undefined)
 
   const documentLines = 20 // Number of desired lines in the document array
+
+  const handleChangePage = (event?: React.ChangeEvent<unknown>, value?: number) => {
+    setPage(value ? value : 1)
+    setLoadingStatus(true)
+    fetchPMSI(true, value ? value : 1, patientId, selectedTab, searchInput, nda, code)
+      .then((pmsiResp) => {
+        setData(pmsiResp?.pmsiData ?? [])
+        setTotal(pmsiResp?.pmsiTotal ?? 0)
+      })
+      .catch((error) => console.log(error))
+      .then(() => setLoadingStatus(false))
+  }
 
   const handleOpenDialog = () => {
     setOpen(true)
@@ -74,47 +86,15 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
     handleChangePage()
   }
 
-  const handleChangeSearchInput = (event: {
-    target: { value: React.SetStateAction<string> }
-  }) => {
+  const handleChangeSearchInput = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchInput(event.target.value)
-  }
-
-  const handleChangeNdaInput = (event: {
-    target: { value: React.SetStateAction<string> }
-  }) => {
-    setNda(event.target.value)
-  }
-
-  const handleChangeCodeInput = (event: {
-    target: { value: React.SetStateAction<string> }
-  }) => {
-    setCode(event.target.value)
-  }
-
-  const handleChangePage = (
-    event?: React.ChangeEvent<unknown>,
-    value?: number
-  ) => {
-    setPage(value ? value : 1)
-    setLoadingStatus(true)
-    fetchPMSI(value ? value : 1, patientId, selectedTab, searchInput, nda, code)
-      .then((pmsiResp) => {
-        setData(pmsiResp?.pmsiData ?? [])
-        setTotal(pmsiResp?.pmsiTotal ?? 0)
-      })
-      .catch((error) => console.log(error))
-      .then(() => setLoadingStatus(false))
   }
 
   const onSearchPMSI = async () => {
     handleChangePage()
   }
 
-  const onKeyDown = async (e: {
-    keyCode: number
-    preventDefault: () => void
-  }) => {
+  const onKeyDown = async (e: { keyCode: number; preventDefault: () => void }) => {
     if (e.keyCode === 13) {
       e.preventDefault()
       onSearchPMSI()
@@ -144,13 +124,7 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
   }, [patientId, selectedTab]) // eslint-disable-line
 
   return (
-    <Grid
-      container
-      item
-      xs={11}
-      justify="flex-end"
-      className={classes.documentTable}
-    >
+    <Grid container item xs={11} justify="flex-end" className={classes.documentTable}>
       <Grid item container justify="space-between" alignItems="center">
         <Tabs
           classes={{
@@ -166,18 +140,8 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
             label="Diagnostics CIM10"
             value="CIM10"
           />
-          <Tab
-            classes={{ selected: classes.selected }}
-            className={classes.tabTitle}
-            label="Actes CCAM"
-            value="CCAM"
-          />
-          <Tab
-            classes={{ selected: classes.selected }}
-            className={classes.tabTitle}
-            label="GHM"
-            value="GHM"
-          />
+          <Tab classes={{ selected: classes.selected }} className={classes.tabTitle} label="Actes CCAM" value="CCAM" />
+          <Tab classes={{ selected: classes.selected }} className={classes.tabTitle} label="GHM" value="GHM" />
         </Tabs>
         <Typography variant="button">
           {total || 0} /{' '}
@@ -188,13 +152,7 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
             : `${ghmTotal} GHM`}
         </Typography>
         <div className={classes.documentButtons}>
-          <Grid
-            item
-            container
-            xs={10}
-            alignItems="center"
-            className={classes.searchBar}
-          >
+          <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
             <InputBase
               placeholder="Rechercher"
               className={classes.input}
@@ -202,11 +160,7 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
               onChange={handleChangeSearchInput}
               onKeyDown={onKeyDown}
             />
-            <IconButton
-              type="submit"
-              aria-label="search"
-              onClick={onSearchPMSI}
-            >
+            <IconButton type="submit" aria-label="search" onClick={onSearchPMSI}>
               <SearchIcon fill="#ED6D91" height="15px" />
             </IconButton>
           </Grid>
@@ -224,9 +178,14 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
             onClose={() => setOpen(false)}
             onSubmit={handleCloseDialog}
             nda={nda}
-            onChangeNda={handleChangeNdaInput}
+            onChangeNda={setNda}
             code={code}
-            onChangeCode={handleChangeCodeInput}
+            onChangeCode={setCode}
+            startDate={startDate}
+            onChangeStartDate={setStartDate}
+            endDate={endDate}
+            onChangeEndDate={setEndDate}
+            deidentified={deidentifiedBoolean}
           />
         </div>
       </Grid>
@@ -240,7 +199,7 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
             <TableHead className={classes.tableHead}>
               <TableRow>
                 <TableCell align="left" className={classes.tableHeadCell}>
-                  NDA
+                  {deidentifiedBoolean ? 'ID Technique Visite' : 'NDA'}
                 </TableCell>
                 <TableCell align="left" className={classes.tableHeadCell}>
                   Codage le
@@ -267,51 +226,41 @@ const PatientPMSI: React.FC<PatientPMSITypes> = ({
                   {data.map((row) => {
                     return (
                       <TableRow className={classes.tableBodyRows} key={row.id}>
-                        <TableCell align="left">{row.NDA}</TableCell>
+                        <TableCell align="left">{row.NDA ?? 'Inconnu'}</TableCell>
                         <TableCell align="left">
-                          {selectedTab === 'CIM10' &&
-                            (new Date(row.recordedDate).toLocaleDateString(
-                              'fr-FR'
-                            ) ??
-                              'Date inconnue')}
-                          {selectedTab === 'GHM' &&
-                            (new Date(row.created).toLocaleDateString(
-                              'fr-FR'
-                            ) ??
-                              'Date inconnue')}
-                          {selectedTab === 'CCAM' &&
-                            (new Date(row.performedDateTime).toLocaleDateString(
-                              'fr-FR'
-                            ) ??
-                              'Date inconnue')}
+                          {row.resourceType === 'Condition' &&
+                            row.recordedDate &&
+                            (new Date(row.recordedDate).toLocaleDateString('fr-FR') ?? 'Date inconnue')}
+                          {row.resourceType === 'Claim' &&
+                            row.created &&
+                            (new Date(row.created).toLocaleDateString('fr-FR') ?? 'Date inconnue')}
+                          {row.resourceType === 'Procedure' &&
+                            row.performedDateTime &&
+                            (new Date(row.performedDateTime).toLocaleDateString('fr-FR') ?? 'Date inconnue')}
                         </TableCell>
                         <TableCell align="center">
-                          {row.diagnosis
-                            ? row.diagnosis[0].packageCode.coding[0].code
-                            : row.class?.code || row.code?.coding[0].code}
+                          {row.resourceType === 'Claim'
+                            ? row.diagnosis?.[0].packageCode?.coding?.[0].code
+                            : // @ts-ignore TODO: There is no class member in Conditon or Procedure FHIR types
+                              row.class?.code || row.code?.coding?.[0].code}
                         </TableCell>
                         <TableCell align="center" className={classes.libelle}>
-                          {row.diagnosis
-                            ? row.diagnosis[0].packageCode.coding[0].display
-                            : row.class?.code || row.code?.coding[0].display}
+                          {row.resourceType === 'Claim'
+                            ? row.diagnosis?.[0].packageCode?.coding?.[0].display
+                            : // @ts-ignore TODO: There is no class member in Conditon or Procedure FHIR types
+                              row.class?.code || row.code?.coding?.[0].display}
                         </TableCell>
                         {selectedTab === 'CIM10' && (
-                          <TableCell align="center">
-                            {row.extension ? row.extension[0].valueString : '-'}
-                          </TableCell>
+                          <TableCell align="center">{row.extension ? row.extension[0].valueString : '-'}</TableCell>
                         )}
-                        <TableCell align="center">
-                          {row.serviceProvider}
-                        </TableCell>
+                        <TableCell align="center">{row.serviceProvider ?? 'Non renseigné'}</TableCell>
                       </TableRow>
                     )
                   })}
                 </>
               ) : (
                 <Grid container justify="center">
-                  <Typography variant="button">
-                    Aucun document à afficher
-                  </Typography>
+                  <Typography variant="button">Aucun document à afficher</Typography>
                 </Grid>
               )}
             </TableBody>

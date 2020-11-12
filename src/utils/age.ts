@@ -1,34 +1,11 @@
 import { CohortPatient } from 'types'
 import { CONTEXT } from '../constants'
 
-export const getAge = (patient: CohortPatient): string => {
-  if (CONTEXT === 'aphp') {
-    if (patient.extension) {
-      return getAgeAphp(
-        patient.extension.find((item) => item.url?.includes('Age'))
-      )
-    }
-  } else if (CONTEXT === 'arkhn') {
-    if (patient.birthDate) {
-      return getAgeArkhn(
-        new Date(patient.birthDate),
-        patient.deceasedDateTime
-          ? new Date(patient.deceasedDateTime)
-          : new Date()
-      ).toString()
-    }
-  }
-  return 'Âge inconnu'
-}
-
 export const getAgeArkhn = (birthDate: Date, deathOrTodayDate = new Date()) => {
   const monthDifference = deathOrTodayDate.getMonth() - birthDate.getMonth()
 
   const age = deathOrTodayDate.getFullYear() - birthDate.getFullYear()
-  if (
-    monthDifference < 0 ||
-    (monthDifference === 0 && deathOrTodayDate.getDate() < birthDate.getDate())
-  ) {
+  if (monthDifference < 0 || (monthDifference === 0 && deathOrTodayDate.getDate() < birthDate.getDate())) {
     return age - 1
   }
   return age
@@ -51,4 +28,20 @@ export const getAgeAphp = (ageObj: any) => {
   } else {
     return 'Âge inconnu'
   }
+}
+
+export const getAge = (patient: CohortPatient): string => {
+  if (CONTEXT === 'aphp') {
+    if (patient.extension) {
+      return getAgeAphp(patient.extension.find((item) => item.url?.includes('Age')))
+    }
+  } else if (CONTEXT === 'arkhn') {
+    if (patient.birthDate) {
+      return getAgeArkhn(
+        new Date(patient.birthDate),
+        patient.deceasedDateTime ? new Date(patient.deceasedDateTime) : new Date()
+      ).toString()
+    }
+  }
+  return 'Âge inconnu'
 }

@@ -12,8 +12,7 @@ import {
   IOperationOutcome,
   PatientGenderKind,
   IObservation,
-  IDocumentReference,
-  IDiagnosticReport
+  IDocumentReference
 } from '@ahryman40k/ts-fhir-types/lib/R4'
 
 export interface TypedEntry<T extends IResourceList> extends IBundle_Entry {
@@ -24,13 +23,11 @@ export interface TypedBundle<T extends IResourceList> extends IBundle {
   entry?: TypedEntry<T>[]
 }
 
-export type FHIR_API_Response<T extends IResourceList> =
-  | TypedBundle<T>
-  | IOperationOutcome
+export type FHIR_API_Response<T extends IResourceList> = TypedBundle<T> | IOperationOutcome
 
 export type Back_API_Response<T> = {
-  results: T[]
-  count: number
+  results?: T[]
+  count?: number
 }
 
 export type CohortComposition = IComposition & {
@@ -54,9 +51,7 @@ export type CohortPatient = IPatient & {
   lastLabResults?: IObservation
 }
 
-export type PMSIEntry<
-  T extends IProcedure | ICondition | IClaim | IDiagnosticReport
-> = T & {
+export type PMSIEntry<T extends IProcedure | ICondition | IClaim> = T & {
   serviceProvider?: string
   NDA?: string
 }
@@ -71,11 +66,23 @@ export type Cohort = {
   favorite?: boolean
 }
 
+export type FormattedCohort = {
+  researchId: string
+  fhir_groups_ids?: string
+  name?: string
+  status?: string
+  nPatients?: number
+  date?: string
+  perimeter?: string
+  favorite?: boolean
+}
+
 export type CohortGroup = IGroup & {
   id: string
   name: string
   quantity: number
   parentId?: string
+  subItems?: CohortGroup[]
 }
 
 export enum Month {
@@ -96,7 +103,7 @@ export enum Month {
 export enum InclusionCriteriaTypes {
   medicalDocument = 'Document médical',
   patientDemography = 'Démographie patient',
-  CIMDiagnostic = 'Diagnostiques CIM'
+  CIMDiagnostic = 'Diagnostic CIM'
 }
 
 export enum SearchByTypes {
@@ -149,8 +156,10 @@ export type ScopeTreeRow = {
   resourceType?: string
   id: string
   name: string
-  parentId?: string
   quantity: number
+  parentId?: string
+  subItems?: ScopeTreeRow[] | undefined
+  managingEntity?: any | undefined
 }
 
 export type SimpleChartDataType = {
@@ -164,24 +173,21 @@ export type CohortData = {
   name?: string
   cohort?: IGroup | IGroup[]
   totalPatients?: number
-  originalPatients?: IPatient[]
+  originalPatients?: CohortPatient[]
   totalDocs?: number
-  documentsList?: CohortComposition[]
+  documentsList?: (CohortComposition | IDocumentReference)[]
   wordcloudData?: any
   encounters?: IEncounter[]
   genderRepartitionMap?: ComplexChartDataType<PatientGenderKind>
   visitTypeRepartitionData?: SimpleChartDataType[]
   monthlyVisitData?: ComplexChartDataType<Month>
-  agePyramidData?: ComplexChartDataType<
-    number,
-    { male: number; female: number; other?: number }
-  >
+  agePyramidData?: ComplexChartDataType<number, { male: number; female: number; other?: number }>
 }
 
 export type PatientData = {
   patient?: CohortPatient
   hospit?: IEncounter[]
-  documents?: CohortComposition[] | IDocumentReference[]
+  documents?: (CohortComposition | IDocumentReference)[]
   documentsTotal?: number
   consult?: PMSIEntry<IProcedure>[]
   consultTotal?: number
@@ -189,4 +195,26 @@ export type PatientData = {
   diagnosticTotal?: number
   ghm?: PMSIEntry<IClaim>[]
   ghmTotal?: number
+}
+
+export type CriteriaItemType = {
+  title: string
+  id: string
+  color: string
+  disabled?: boolean
+  data: any
+  components: any
+  subItems?: CriteriaItemType[]
+}
+
+export type SelectedCriteriaType = {
+  type: string
+  title: string
+  code?: any
+  gender?: number
+  years?: [number, number]
+  search?: string
+  doc?: '55188-7' | '11336-5' | '57833-6'
+  start_occurrence: string
+  end_occurrence: string
 }

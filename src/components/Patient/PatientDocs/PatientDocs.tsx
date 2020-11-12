@@ -1,12 +1,6 @@
 import React, { useState } from 'react'
 
-import {
-  Button,
-  Grid,
-  IconButton,
-  InputBase,
-  Typography
-} from '@material-ui/core'
+import { Button, Grid, IconButton, InputBase, Typography } from '@material-ui/core'
 import Pagination from '@material-ui/lab/Pagination'
 
 import { ReactComponent as SearchIcon } from '../../../assets/icones/search.svg'
@@ -27,12 +21,9 @@ type PatientDocsTypes = {
   patientId: string
   documents?: (CohortComposition | IDocumentReference)[]
   total: number
+  deidentifiedBoolean: boolean
 }
-const PatientDocs: React.FC<PatientDocsTypes> = ({
-  patientId,
-  documents,
-  total
-}) => {
+const PatientDocs: React.FC<PatientDocsTypes> = ({ patientId, documents, total, deidentifiedBoolean }) => {
   const classes = useStyles()
   const [page, setPage] = useState(1)
   const [totalDocs, setTotalDocs] = useState(total)
@@ -44,17 +35,25 @@ const PatientDocs: React.FC<PatientDocsTypes> = ({
   const [helpOpen, setHelpOpen] = useState(false)
   const [nda, setNda] = useState('')
   const [selectedDocTypes, setSelectedDocTypes] = useState(['all'])
+  const [startDate, setStartDate] = useState<string | undefined>(undefined)
+  const [endDate, setEndDate] = useState<string | undefined>(undefined)
 
   const documentLines = 20 // Number of desired lines in the document array
 
-  const handleChangeSelect = (event: {
-    target: { value: React.SetStateAction<string[]> }
-  }) => {
-    setSelectedDocTypes(event.target.value)
-  }
-
   const handleOpenDialog = () => {
     setOpen(true)
+  }
+
+  const handleChangePage = (event?: React.ChangeEvent<unknown>, value?: number) => {
+    setPage(value || 1)
+    setLoadingStatus(true)
+    fetchDocuments(deidentifiedBoolean, value || 1, patientId, searchInput, selectedDocTypes, nda, startDate, endDate)
+      .then((docResp) => {
+        setDocs(docResp?.docsList ?? [])
+        setTotalDocs(docResp?.docsTotal ?? 0)
+      })
+      .catch((error) => console.log(error))
+      .then(() => setLoadingStatus(false))
   }
 
   const handleCloseDialog = () => {
@@ -62,31 +61,8 @@ const PatientDocs: React.FC<PatientDocsTypes> = ({
     handleChangePage()
   }
 
-  const handleChangeInput = (event: {
-    target: { value: React.SetStateAction<string> }
-  }) => {
+  const handleChangeInput = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchInput(event.target.value)
-  }
-
-  const handleChangeNdaInput = (event: {
-    target: { value: React.SetStateAction<string> }
-  }) => {
-    setNda(event.target.value)
-  }
-
-  const handleChangePage = (
-    event?: React.ChangeEvent<unknown>,
-    value?: number
-  ) => {
-    setPage(value || 1)
-    setLoadingStatus(true)
-    fetchDocuments(value || 1, patientId, searchInput, selectedDocTypes, nda)
-      .then((docResp) => {
-        setDocs(docResp?.docsList ?? [])
-        setTotalDocs(docResp?.docsTotal ?? 0)
-      })
-      .catch((error) => console.log(error))
-      .then(() => setLoadingStatus(false))
   }
 
   const onSearchDocument = () => {
@@ -106,25 +82,13 @@ const PatientDocs: React.FC<PatientDocsTypes> = ({
   }
 
   return (
-    <Grid
-      container
-      item
-      xs={11}
-      justify="flex-end"
-      className={classes.documentTable}
-    >
+    <Grid container item xs={11} justify="flex-end" className={classes.documentTable}>
       <Grid container justify="space-between" alignItems="center">
         <Typography variant="button">
           {totalDocs} / {total} document(s)
         </Typography>
         <div className={classes.documentButtons}>
-          <Grid
-            item
-            container
-            xs={10}
-            alignItems="center"
-            className={classes.searchBar}
-          >
+          <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
             <InputBase
               placeholder="Rechercher"
               className={classes.input}
@@ -132,21 +96,14 @@ const PatientDocs: React.FC<PatientDocsTypes> = ({
               onChange={handleChangeInput}
               onKeyDown={onKeyDown}
             />
-            <IconButton
-              type="submit"
-              aria-label="search"
-              onClick={onSearchDocument}
-            >
+            <IconButton type="submit" aria-label="search" onClick={onSearchDocument}>
               <SearchIcon fill="#ED6D91" height="15px" />
             </IconButton>
           </Grid>
           <IconButton type="submit" onClick={() => setHelpOpen(true)}>
             <InfoIcon />
           </IconButton>
-          <DocumentSearchHelp
-            open={helpOpen}
-            onClose={() => setHelpOpen(false)}
-          />
+          <DocumentSearchHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
           <Button
             variant="contained"
             disableElevation
@@ -163,6 +120,7 @@ const PatientDocs: React.FC<PatientDocsTypes> = ({
         documents={docs}
         searchMode={searchMode}
         showIpp={false}
+        deidentified={deidentifiedBoolean}
       />
       <Pagination
         className={classes.pagination}
@@ -176,9 +134,14 @@ const PatientDocs: React.FC<PatientDocsTypes> = ({
         onClose={() => setOpen(false)}
         onSubmit={handleCloseDialog}
         nda={nda}
-        onChangeNda={handleChangeNdaInput}
+        onChangeNda={setNda}
         selectedDocTypes={selectedDocTypes}
-        onChangeSelectedDocTypes={handleChangeSelect}
+        onChangeSelectedDocTypes={setSelectedDocTypes}
+        startDate={startDate}
+        onChangeStartDate={setStartDate}
+        endDate={endDate}
+        onChangeEndDate={setEndDate}
+        deidentified={deidentifiedBoolean}
       />
     </Grid>
   )

@@ -49,15 +49,9 @@ const PatientTitle: React.FC<PatientTitleProps> = ({ firstName, lastName }) => {
           <MoreIcon className={classes.iconButtons} fill="#5BC5F2" />
         </IconButton>
       )}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Inclure dans une cohorte</MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Exclure d&apos;une cohorte
-        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>Exclure d&apos;une cohorte</MenuItem>
       </Menu>
     </Grid>
   )

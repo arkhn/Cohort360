@@ -3,20 +3,24 @@ import apiBackCohort from './apiBackCohort'
 import { CONTEXT } from '../constants'
 // import { IGroup } from '@ahryman40k/ts-fhir-types/lib/R4'
 import {
+  Back_API_Response,
   Cohort,
   // FHIR_API_Response,
-  Back_API_Response
+  FormattedCohort
 } from '../types'
 
-export const fetchCohorts = async (searchInput?: string, page?: number) => {
+export const fetchCohorts = async (
+  searchInput?: string,
+  page?: number
+): Promise<Back_API_Response<FormattedCohort> | undefined> => {
   if (CONTEXT === 'arkhn') {
     // const cohortResp = await api.get<FHIR_API_Response<IGroup>>(
     //   '/Group?&_sort=-meta.lastUpdated'
     // )
 
     return {
-      formattedCohort: [],
-      total: 0
+      results: [],
+      count: 0
     }
 
     // return {
@@ -54,70 +58,78 @@ export const fetchCohorts = async (searchInput?: string, page?: number) => {
       `/cohorts/?ordering=-favorite&type=IMPORT_I2B2${searchByText}&limit=20${offset}`
     )
 
-    return {
-      formattedCohort: cohortResp.data.results
-        .map((cohort) => ({
-          researchId: cohort.uuid,
-          fhir_groups_ids: cohort.fhir_groups_ids,
-          titre: cohort.name,
-          statut: 'Cohorte i2b2',
-          nPatients: cohort.result_size,
-          date: cohort.created_at,
-          perimetre: '-',
-          favorite: cohort.favorite
-        }))
-        .filter(Boolean),
-      total: cohortResp.data.count
-    }
-  }
-}
-
-export const fetchFavoriteCohorts = async () => {
-  if (CONTEXT === 'aphp') {
-    const cohortResp = await apiBackCohort.get<Back_API_Response<Cohort>>(
-      '/cohorts/?favorite=true&type=IMPORT_I2B2'
-    )
-
-    return {
-      formattedCohort: cohortResp.data.results
-        .map((cohort: Cohort) => {
-          return {
-            researchId: cohort.uuid,
+    const results = cohortResp.data.results
+      ? cohortResp.data.results
+          .map((cohort) => ({
+            researchId: cohort.uuid ?? '',
             fhir_groups_ids: cohort.fhir_groups_ids,
-            titre: cohort.name,
-            statut: 'Cohorte i2b2',
+            name: cohort.name,
+            status: 'Cohorte i2b2',
             nPatients: cohort.result_size,
             date: cohort.created_at,
-            perimetre: '-',
+            perimeter: '-',
             favorite: cohort.favorite
-          }
-        })
-        .filter(Boolean)
+          }))
+          .filter(Boolean)
+      : undefined
+
+    return {
+      results: results,
+      count: cohortResp.data.count ?? 0
     }
   }
 }
 
-export const fetchLastCohorts = async () => {
+export const fetchFavoriteCohorts = async (): Promise<Back_API_Response<FormattedCohort> | undefined> => {
+  if (CONTEXT === 'aphp') {
+    const cohortResp = await apiBackCohort.get<Back_API_Response<Cohort>>('/cohorts/?favorite=true&type=IMPORT_I2B2')
+
+    const results = cohortResp.data.results
+      ? cohortResp.data.results
+          .map((cohort: Cohort) => {
+            return {
+              researchId: cohort.uuid ?? '',
+              fhir_groups_ids: cohort.fhir_groups_ids,
+              name: cohort.name,
+              statut: 'Cohorte i2b2',
+              nPatients: cohort.result_size,
+              date: cohort.created_at,
+              perimetre: '-',
+              favorite: cohort.favorite
+            }
+          })
+          .filter(Boolean)
+      : undefined
+
+    return {
+      results: results
+    }
+  }
+}
+
+export const fetchLastCohorts = async (): Promise<Back_API_Response<FormattedCohort> | undefined> => {
   if (CONTEXT === 'aphp') {
     const cohortResp = await apiBackCohort.get<Back_API_Response<Cohort>>(
       '/cohorts/?limit=5&type=IMPORT_I2B2&ordering=-created_at'
     )
 
-    return {
-      formattedCohort: cohortResp.data.results
-        .map((cohort: Cohort) => {
-          return {
-            researchId: cohort.uuid,
+    const results = cohortResp.data.results
+      ? cohortResp.data.results
+          .map((cohort) => ({
+            researchId: cohort.uuid ?? '',
             fhir_groups_ids: cohort.fhir_groups_ids,
-            titre: cohort.name,
-            statut: 'Cohorte i2b2',
+            name: cohort.name,
+            status: 'Cohorte i2b2',
             nPatients: cohort.result_size,
             date: cohort.created_at,
-            perimetre: '-',
+            perimeter: '-',
             favorite: cohort.favorite
-          }
-        })
-        .filter(Boolean)
+          }))
+          .filter(Boolean)
+      : undefined
+
+    return {
+      results: results
     }
   }
 }
@@ -128,7 +140,7 @@ export const setFavorite = async (cohortId: string, favStatus: boolean) => {
   }
 }
 
-export const onRemoveCohort = async (selectedCohort: string) => {
+export const onRemoveCohort = async (selectedCohort?: string) => {
   if (CONTEXT === 'arkhn') {
     await api.delete(`/Group/${selectedCohort}`)
   } else if (CONTEXT === 'aphp') {

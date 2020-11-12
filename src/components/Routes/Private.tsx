@@ -43,11 +43,7 @@ const PrivateRoute: React.FC<Props> = (props) => {
 
   if (loading) return <span>Loading</span>
 
-  if (
-    (!me && !authToken) ||
-    error ||
-    (authToken && !loading && data && !data.me)
-  ) {
+  if ((!me && !authToken) || error || (authToken && !loading && data && !data.me)) {
     return (
       <Route
         render={({ location }) => (

@@ -1,17 +1,12 @@
 import React, { useState } from 'react'
 
-import {
-  CircularProgress,
-  Divider,
-  Drawer,
-  Grid,
-  List,
-  Typography
-} from '@material-ui/core'
+import { CircularProgress, Divider, Drawer, Grid, IconButton, List, Typography } from '@material-ui/core'
 import Pagination from '@material-ui/lab/Pagination'
 
 import PatientSidebarHeader from './PatientSidebarHeader/PatientSidebarHeader'
 import PatientSidebarItem from './PatientSidebarItem/PatientSidebarItem'
+
+import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 
 import { getAge } from '../../../utils/age'
 import { fetchPatientList } from '../../../services/cohortInfos'
@@ -26,13 +21,15 @@ type PatientSidebarTypes = {
   groupId?: string
   openDrawer: boolean
   onClose: () => void
+  deidentifiedBoolean: boolean
 }
 const PatientSidebar: React.FC<PatientSidebarTypes> = ({
   total,
   patients,
   groupId,
   openDrawer,
-  onClose
+  onClose,
+  deidentifiedBoolean
 }) => {
   const classes = useStyles()
 
@@ -47,75 +44,60 @@ const PatientSidebar: React.FC<PatientSidebarTypes> = ({
   const [age, setAge] = useState<[number, number]>([0, 130])
   const [vitalStatus, setVitalStatus] = useState(VitalStatus.all)
 
-  const documentLines = 20 // Number of desired lines in the document array
+  const numberOfRows = 20 // Number of desired lines in the document array
 
-  const handleChangePage = (
-    event?: React.ChangeEvent<unknown>,
-    value: number = 1
-  ) => {
-    setPage(value)
+  const onSearchPatient = (value = 1) => {
     setLoadingStatus(true)
-    fetchPatientList(
-      value,
-      searchBy,
-      searchInput,
-      gender,
-      age,
-      vitalStatus,
-      groupId
-    )
+    fetchPatientList(value, searchBy, searchInput, gender, age, vitalStatus, groupId)
       .then((patientsResp) => {
         setPatientsList(patientsResp?.originalPatients ?? [])
         setTotalPatients(patientsResp?.totalPatients ?? 0)
+        setPage(page)
       })
       .catch((error) => console.log(error))
-      .then(() => {
+      .finally(() => {
         setLoadingStatus(false)
       })
   }
 
-  const handleChangeSearchInput = (event: {
-    target: { value: React.SetStateAction<string> }
-  }) => {
+  const handleChangeSearchInput = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchInput(event.target.value)
   }
 
-  const onKeyDown = async (e: {
-    keyCode: number
-    preventDefault: () => void
-  }) => {
+  const onKeyDown = (e: { keyCode: number; preventDefault: () => void }) => {
     if (e.keyCode === 13) {
       e.preventDefault()
       onSearchPatient()
     }
   }
 
-  // eslint-disable-next-line
-  const handleChangeSelect = (
-    event: React.ChangeEvent<{
-      value: SearchByTypes
-    }>
-  ) => {
-    setSearchBy(event.target.value)
+  const handleChangePage = (event: React.ChangeEvent<unknown>, page: number) => {
+    if (patientsList && patientsList.length < totalPatients) {
+      onSearchPatient(page)
+    } else {
+      setPage(page)
+    }
   }
 
-  const onSearchPatient = async () => {
-    handleChangePage()
-  }
-
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (submit: boolean) => () => {
     setOpen(false)
-    handleChangePage()
+    submit && onSearchPatient()
   }
+
+  const patientsToDisplay =
+    patientsList?.length === totalPatients
+      ? patientsList.slice((page - 1) * numberOfRows, page * numberOfRows)
+      : patientsList
 
   return (
-    <Drawer
-      anchor="right"
-      classes={{ paper: classes.paper }}
-      variant="persistent"
-      open={openDrawer}
-    >
+    <Drawer anchor="right" classes={{ paper: classes.paper }} variant="persistent" open={openDrawer}>
+      <div className={classes.openLeftBar}>
+        <IconButton onClick={onClose}>
+          <ChevronRightIcon color="action" width="20px" />
+        </IconButton>
+      </div>
       <PatientSidebarHeader
+        deidentified={deidentifiedBoolean}
         onCloseButtonClick={onClose}
         searchInput={searchInput}
         onChangeSearchInput={handleChangeSearchInput}
@@ -125,8 +107,8 @@ const PatientSidebar: React.FC<PatientSidebarTypes> = ({
         onSearchPatient={onSearchPatient}
         onClickFilterButton={() => setOpen(true)}
         open={open}
-        onCloseFilterDialog={() => setOpen(false)}
-        onSubmitDialog={handleCloseDialog}
+        onCloseFilterDialog={handleCloseDialog(false)}
+        onSubmitDialog={handleCloseDialog(true)}
         gender={gender}
         onChangeGender={setGender}
         age={age}
@@ -140,15 +122,23 @@ const PatientSidebar: React.FC<PatientSidebarTypes> = ({
           <Grid container justify="center" className={classes.loading}>
             <CircularProgress />
           </Grid>
-        ) : patientsList ? (
-          patientsList.map((patient) => (
+        ) : patientsToDisplay ? (
+          patientsToDisplay.map((patient) => (
             <PatientSidebarItem
               key={patient.id}
-              firstName={patient.name?.[0].given?.[0] ?? ''}
-              lastName={patient.name?.map((e) => e.family).join(' ') ?? ''}
+              firstName={deidentifiedBoolean ? 'Prénom' : patient.name?.[0].given?.[0] ?? ''}
+              lastName={deidentifiedBoolean ? 'Nom' : patient.name?.map((e) => e.family).join(' ') ?? ''}
               age={getAge(patient)}
               gender={patient.gender}
-              deceased={patient.deceasedDateTime}
+              deceased={patient.deceasedDateTime ?? patient.deceasedBoolean}
+              ipp={
+                deidentifiedBoolean
+                  ? `ID Technique: ${patient.id}`
+                  : `IPP: ${
+                      patient.identifier?.find((identifier) => identifier.type?.coding?.[0].code === 'IPP')?.value ??
+                      'inconnu'
+                    }`
+              }
               id={patient.id}
             />
           ))
@@ -160,7 +150,7 @@ const PatientSidebar: React.FC<PatientSidebarTypes> = ({
       </List>
       <Pagination
         className={classes.pagination}
-        count={Math.ceil(totalPatients / documentLines)}
+        count={Math.ceil(totalPatients / numberOfRows)}
         shape="rounded"
         onChange={handleChangePage}
         page={page}

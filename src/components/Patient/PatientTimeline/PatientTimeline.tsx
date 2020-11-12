@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from 'react'
 
 import moment from 'moment'
@@ -12,13 +11,9 @@ import HospitDialog from './HospitDialog/HospitDialog'
 
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 
+import { getEncounterOrProcedureDocs } from 'services/patient'
 import { CohortComposition, PMSIEntry } from 'types'
-import {
-  IEncounter,
-  IProcedure,
-  IDocumentReference,
-  IPeriod
-} from '@ahryman40k/ts-fhir-types/lib/R4'
+import { IEncounter, IProcedure, IDocumentReference, IPeriod } from '@ahryman40k/ts-fhir-types/lib/R4'
 
 import useStyles from './styles'
 
@@ -43,9 +38,7 @@ type TimelineData = {
   }
 }
 
-const getTimelineFormattedDataItem = (
-  item: IEncounter | PMSIEntry<IProcedure>
-) => {
+const getTimelineFormattedDataItem = (item: IEncounter | PMSIEntry<IProcedure>) => {
   const dataItem: {
     start?: string
     end?: string
@@ -65,10 +58,7 @@ const getTimelineFormattedDataItem = (
   return { dataItem, yearStr, monthStr }
 }
 
-const generateTimelineFormattedData = (
-  hospits?: IEncounter[],
-  consults?: PMSIEntry<IProcedure>[]
-): TimelineData => {
+const generateTimelineFormattedData = (hospits?: IEncounter[], consults?: PMSIEntry<IProcedure>[]): TimelineData => {
   const data: TimelineData = {}
 
   hospits?.forEach((item) => {
@@ -107,17 +97,11 @@ type PatientTimelineTypes = {
   hospits?: IEncounter[]
   consults?: PMSIEntry<IProcedure>[]
 }
-const PatientTimeline: React.FC<PatientTimelineTypes> = ({
-  documents,
-  hospits,
-  consults
-}) => {
+const PatientTimeline: React.FC<PatientTimelineTypes> = ({ hospits, consults }) => {
   const classes = useStyles()
   const timelineData = generateTimelineFormattedData(hospits, consults)
   const [openHospitDialog, setOpenHospitDialog] = useState(false)
-  const [selectedEncounter, setSelectedEncounter] = useState<IEncounter | null>(
-    null
-  )
+  const [dialogDocuments, setDialogDocuments] = useState<(CohortComposition | IDocumentReference)[]>([])
   const yearComponentSize: { [year: number]: number } = {}
 
   let yearList: number[] = Object.keys(timelineData)
@@ -136,29 +120,32 @@ const PatientTimeline: React.FC<PatientTimelineTypes> = ({
     ).reverse()
   }
 
+  const handleClickOpenHospitDialog = (hospitOrConsult?: IEncounter | IProcedure) => {
+    hospitOrConsult &&
+      getEncounterOrProcedureDocs(hospitOrConsult).then((docs) => {
+        setDialogDocuments(docs)
+      })
+    setOpenHospitDialog(true)
+  }
+
+  const handleClose = () => {
+    setOpenHospitDialog(false)
+  }
+
   const isActivityInYear = (yearSearched: number) => {
     // function that check if there are activities during {yearSearched} to create a year component or not
-    const isHospitDuringYearSearched = (hospit: {
-      start?: string | undefined
-      end?: string | undefined
-    }) =>
+    const isHospitDuringYearSearched = (hospit: { start?: string | undefined; end?: string | undefined }) =>
       new Date(hospit.start ?? '').getFullYear() <= yearSearched &&
       new Date(hospit.end ?? '').getFullYear() >= yearSearched
 
-    const isConsultDuringYearSearched = (consult: {
-      start?: string | undefined
-      end?: string | undefined
-    }) => new Date(consult.start ?? '').getFullYear() === yearSearched
+    const isConsultDuringYearSearched = (consult: { start?: string | undefined; end?: string | undefined }) =>
+      new Date(consult.start ?? '').getFullYear() === yearSearched
 
     return Object.keys(timelineData).some((year) =>
       Object.keys(timelineData[year]).some(
         (month) =>
-          timelineData[year][month].hospit.some((hospit) =>
-            isHospitDuringYearSearched(hospit)
-          ) ||
-          timelineData[year][month].consult.some((consult) =>
-            isConsultDuringYearSearched(consult)
-          )
+          timelineData[year][month].hospit.some((hospit) => isHospitDuringYearSearched(hospit)) ||
+          timelineData[year][month].consult.some((consult) => isConsultDuringYearSearched(consult))
       )
     )
   }
@@ -192,8 +179,9 @@ const PatientTimeline: React.FC<PatientTimelineTypes> = ({
       <>
         {monthVisits.hospit && (
           <div className={classes.leftElements}>
-            {monthVisits.hospit.map((hospit) => (
+            {monthVisits.hospit.map((hospit, index) => (
               <TimelineItemLeft
+                key={`ecounter ${hospit.data.id ?? index}`}
                 data={hospit.data}
                 open={handleClickOpenHospitDialog}
                 dotHeight={getComponentSize(hospit.data.period)}
@@ -203,8 +191,9 @@ const PatientTimeline: React.FC<PatientTimelineTypes> = ({
         )}
         {monthVisits.consult && (
           <div className={classes.rightElements}>
-            {monthVisits.consult.map((consult) => (
+            {monthVisits.consult.map((consult, index) => (
               <TimelineItemRight
+                key={`procedure ${consult.data.id ?? index}`}
                 data={consult.data}
                 open={handleClickOpenHospitDialog}
               />
@@ -240,31 +229,15 @@ const PatientTimeline: React.FC<PatientTimelineTypes> = ({
     </React.Fragment>
   )
 
-  const handleClickOpenHospitDialog = (encounter?: IEncounter) => {
-    encounter && setSelectedEncounter(encounter)
-    setOpenHospitDialog(true)
-  }
-
-  const handleClose = () => {
-    setOpenHospitDialog(false)
-  }
-
   return (
     <>
       {!hospits && !consults ? (
         <Grid container justify="center">
-          <Typography variant="button">
-            Le patient n'a pas de visites à afficher.
-          </Typography>
+          <Typography variant="button">Le patient n'a pas de visites à afficher.</Typography>
         </Grid>
       ) : (
         <>
-          <HospitDialog
-            open={openHospitDialog}
-            onClose={handleClose}
-            documents={documents}
-            currentEncounter={selectedEncounter}
-          />
+          <HospitDialog open={openHospitDialog} onClose={handleClose} documents={dialogDocuments} />
           <div className={classes.centeredTimeline}>
             <div className={classes.verticalBar} />
             {yearList.map((year) => (

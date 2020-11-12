@@ -6,6 +6,7 @@ export type MeState = {
   displayName: string
   firstName: string
   lastName: string
+  deidentified: boolean
 } | null
 
 const initialState: MeState = null

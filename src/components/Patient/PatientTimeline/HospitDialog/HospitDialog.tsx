@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { Dialog, DialogActions, DialogTitle } from '@material-ui/core'
 import DocumentTable from '../../PatientDocs/DocumentTable/DocumentTable'
@@ -6,8 +6,8 @@ import DocumentTable from '../../PatientDocs/DocumentTable/DocumentTable'
 import Pagination from '@material-ui/lab/Pagination'
 
 import {
-  IDocumentReference,
-  IEncounter
+  IDocumentReference
+  // IEncounter
 } from '@ahryman40k/ts-fhir-types/lib/R4'
 import { CohortComposition } from 'types'
 
@@ -17,14 +17,8 @@ type HospitDialogTypes = {
   open: boolean
   onClose: () => void
   documents?: (CohortComposition | IDocumentReference)[]
-  currentEncounter?: IEncounter | null
 }
-const HospitDialog: React.FC<HospitDialogTypes> = ({
-  open,
-  onClose,
-  documents,
-  currentEncounter
-}) => {
+const HospitDialog: React.FC<HospitDialogTypes> = ({ open, onClose, documents }) => {
   const classes = useStyles()
   const documentLines = 4 // Number of desired lines in the document array
   const [page, setPage] = useState(1)
@@ -33,40 +27,18 @@ const HospitDialog: React.FC<HospitDialogTypes> = ({
     setPage(value)
   }
 
-  //This filters the documents only if a patient's encounter is given by props
-  //Should work for Composition AND DocumentReference FHIR resources
-  const documentsToDisplay = currentEncounter
-    ? documents?.filter((doc) => {
-        if (doc.resourceType === 'DocumentReference') {
-          return (
-            doc.context?.encounter?.[0].reference?.split('/')[1] ===
-            currentEncounter.id
-          )
-        } else {
-          return doc.encounter?.id === currentEncounter.id
-        }
-      })
-    : documents
+  useEffect(() => {
+    setPage(1)
+  }, [open])
 
   return (
-    <Dialog
-      onClose={onClose}
-      aria-labelledby="simple-dialog-title"
-      open={open}
-      maxWidth={'lg'}
-    >
+    <Dialog onClose={onClose} aria-labelledby="simple-dialog-title" open={open} maxWidth={'lg'}>
       <DialogTitle id="simple-dialog-title">Hospitalisation</DialogTitle>
-      {documentsToDisplay && (
-        <DocumentTable
-          documentLines={documentLines}
-          documents={documentsToDisplay}
-          page={page}
-        />
-      )}
+      {documents && <DocumentTable documentLines={documentLines} documents={documents} page={page} />}
       <DialogActions>
         <Pagination
           className={classes.pagination}
-          count={Math.ceil((documentsToDisplay?.length ?? 0) / documentLines)}
+          count={Math.ceil((documents?.length ?? 0) / documentLines)}
           variant="outlined"
           shape="rounded"
           onChange={handleChange}

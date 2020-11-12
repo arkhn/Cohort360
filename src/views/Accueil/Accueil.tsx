@@ -1,18 +1,18 @@
 import React from 'react'
-import clsx from 'clsx'
-import { Grid, Paper, Container, Typography } from '@material-ui/core'
-import SearchPatientCard from '../../components/Welcome/SearchPatientCard/SearchPatientCard'
-import PatientsCard from '../../components/Welcome/PatientsCard/PatientsCard'
-import NewsCard from '../../components/Welcome/NewsCard/NewsCard'
-import TutorialsCard from '../../components/Welcome/TutorialsCard/TutorialsCard'
-import ResearchCard from '../../components/Welcome/ResearchCard/ResearchCard'
-
-import useStyles from './styles'
 import { useAppSelector } from 'state'
-import {
-  fetchFavoriteCohorts,
-  fetchLastCohorts
-} from 'services/savedResearches'
+
+import { Grid, Paper, Container, Typography } from '@material-ui/core'
+
+import NewsCard from '../../components/Welcome/NewsCard/NewsCard'
+import PatientsCard from '../../components/Welcome/PatientsCard/PatientsCard'
+import ResearchCard from '../../components/Welcome/ResearchCard/ResearchCard'
+import SearchPatientCard from '../../components/Welcome/SearchPatientCard/SearchPatientCard'
+import TutorialsCard from '../../components/Welcome/TutorialsCard/TutorialsCard'
+
+import { fetchFavoriteCohorts, fetchLastCohorts } from 'services/savedResearches'
+
+import clsx from 'clsx'
+import useStyles from './styles'
 
 const Accueil: React.FC = () => {
   const classes = useStyles()
@@ -29,13 +29,7 @@ const Accueil: React.FC = () => {
       })}
     >
       <Container maxWidth="lg" className={classes.container}>
-        <Typography
-          component="h1"
-          variant="h1"
-          color="inherit"
-          noWrap
-          className={classes.title}
-        >
+        <Typography component="h1" variant="h1" color="inherit" noWrap className={classes.title}>
           Bienvenue {practitioner.displayName}
         </Typography>
       </Container>
@@ -69,20 +63,14 @@ const Accueil: React.FC = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={12} lg={12}>
             <Paper className={classes.paper}>
-              <ResearchCard
-                title={'Mes cohortes favorites'}
-                fetchCohort={fetchFavoriteCohorts}
-              />
+              <ResearchCard title={'Mes cohortes favorites'} fetchCohort={fetchFavoriteCohorts} />
             </Paper>
           </Grid>
         </Grid>
         <Grid container spacing={3}>
           <Grid item xs={12} md={12} lg={12}>
             <Paper className={classes.paper}>
-              <ResearchCard
-                title={'Mes dernières cohortes créées'}
-                fetchCohort={fetchLastCohorts}
-              />
+              <ResearchCard title={'Mes dernières cohortes créées'} fetchCohort={fetchLastCohorts} />
             </Paper>
           </Grid>
         </Grid>

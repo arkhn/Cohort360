@@ -10,11 +10,7 @@ type GroupedBarChartProps = {
   width?: number
 }
 
-const GroupedBarChart: React.FC<GroupedBarChartProps> = ({
-  data,
-  height = 250,
-  width = 450
-}) => {
+const GroupedBarChart: React.FC<GroupedBarChartProps> = ({ data, height = 250, width = 450 }) => {
   const node = useRef<SVGSVGElement | null>(null)
 
   useEffect(() => {
@@ -48,6 +44,9 @@ const GroupedBarChart: React.FC<GroupedBarChartProps> = ({
         }
       }
     }
+
+    const color = d3.scaleOrdinal().range(['#78D4FA', '#FC568F', '#8446E4'])
+
     const svg = d3.select(node.current)
     svg.selectAll('*').remove()
     svg.attr('height', height).attr('width', width)
@@ -69,11 +68,7 @@ const GroupedBarChart: React.FC<GroupedBarChartProps> = ({
         .join('g')
         .attr('transform', (d, i) => `translate(0,${i * 15})`)
 
-      g.append('rect')
-        .attr('x', -19)
-        .attr('width', 10)
-        .attr('height', 10)
-        .attr('fill', color)
+      g.append('rect').attr('x', -19).attr('width', 10).attr('height', 10).attr('fill', color)
 
       g.append('text')
         .attr('x', -24)
@@ -88,19 +83,13 @@ const GroupedBarChart: React.FC<GroupedBarChartProps> = ({
       .rangeRound([margin.left, width - margin.right])
       .paddingInner(0.1)
 
-    const x1 = d3
-      .scaleBand()
-      .domain(keys)
-      .rangeRound([0, x0.bandwidth()])
-      .padding(0.05)
+    const x1 = d3.scaleBand().domain(keys).rangeRound([0, x0.bandwidth()]).padding(0.05)
 
     const y = d3
       .scaleLinear()
       .domain([0, d3.max(customData, (d) => d3.max(keys, (key) => d[key]))])
       .nice()
       .rangeRound([height - margin.bottom, margin.top])
-
-    const color = d3.scaleOrdinal().range(['#78D4FA', '#FC568F', '#8446E4'])
 
     const xAxis = (g) =>
       g

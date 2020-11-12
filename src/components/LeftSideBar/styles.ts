@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.leavingScreen
       }),
       overflowX: 'hidden',
-      width: 52, // Pourquoi changer la taille ? 
+      width: 52 // Pourquoi changer la taille ?
       // width: theme.spacing(7) + 1,
       // [theme.breakpoints.up('sm')]: {
       //   width: 52

@@ -7,8 +7,8 @@ import * as cloud from 'd3-cloud'
 const WordCloud = memo(({ wordcloudData }) => {
   const [node, setNode] = useState()
 
-  var height = 250
-  var width = 1000
+  const height = 250
+  const width = 1000
 
   const svg = d3.select(node)
   svg.selectAll('*').remove()
@@ -20,10 +20,10 @@ const WordCloud = memo(({ wordcloudData }) => {
 
   if (data[0]) {
     // Calcul de la frequence
-    var xMax = data[0].extension[0].valueDecimal
+    const xMax = data[0].extension[0].valueDecimal
 
-    for (var i = 0; i < data.length; i++) {
-      var freq = (data[i].extension[0].valueDecimal * 100) / xMax
+    for (let i = 0; i < data.length; i++) {
+      const freq = (data[i].extension[0].valueDecimal * 100) / xMax
       data[i].extension[0].valueDecimal = Math.round(freq * 10) / 10 // <- pour arrondir les décimales
     }
   }
@@ -38,11 +38,11 @@ const WordCloud = memo(({ wordcloudData }) => {
       // .reverse() <- pour inverser l'ordre des couleurs
     )
 
-  var fontFamily = 'sans-serif'
-  var fontScale = 4.5
+  const fontFamily = 'sans-serif'
+  const fontScale = 4.5
 
-  var rotate = 0
-  var padding = 0
+  const rotate = 0
+  const padding = 0
 
   const layout = cloud()
     .size([width, height])

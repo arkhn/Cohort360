@@ -1,22 +1,21 @@
 import React from 'react'
-import clsx from 'clsx'
-import { useSelector } from 'react-redux'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import Grid from '@material-ui/core/Grid'
-import Typography from '@material-ui/core/Typography'
+import { useAppSelector } from 'state'
+
+import { CssBaseline, Grid, Typography } from '@material-ui/core'
+
 import Research from '../../components/SavedResearch/ResearchCard'
 
 import useStyles from './styles'
+import clsx from 'clsx'
 
-const SavedResearches = (props) => {
+const SavedResearches = () => {
   const classes = useStyles()
-  const open = useSelector((state) => state.drawer)
+  const open = useAppSelector((state) => state.drawer)
 
   return (
     <Grid
       container
       direction="column"
-      position="fixed"
       className={clsx(classes.appBar, {
         [classes.appBarShift]: open
       })}

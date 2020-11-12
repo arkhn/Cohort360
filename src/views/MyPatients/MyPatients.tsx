@@ -27,9 +27,7 @@ const MyPatients: React.FC<{}> = () => {
 
   const [selectedTab, selectTab] = useState(tabName || 'apercu')
   const [loading, setLoading] = useState<boolean>(true)
-  const [deidentifiedBoolean, setDeidentifiedBoolean] = useState<
-    boolean | undefined
-  >(false)
+  const [deidentifiedBoolean, setDeidentifiedBoolean] = useState<boolean>(true)
   const [openRedcapDialog, setOpenRedcapDialog] = useState<boolean>(false)
   // FIX arkhn way to retrieve patients
   // const missingEncounters = !!practitioner.patients.find(
@@ -44,10 +42,10 @@ const MyPatients: React.FC<{}> = () => {
   const handleOpenRedcapDialog = () => setOpenRedcapDialog(true)
   const handleCloseRedcapDialog = () => setOpenRedcapDialog(false)
 
-  const handleTabChange = (event: object, newValue: string):void => {
+  const handleTabChange = (event: object, newValue: string): void => {
     selectTab(newValue)
   }
-  
+
   useEffect(() => selectTab(tabName || 'apercu'), [tabName])
 
   useEffect(() => {
@@ -57,9 +55,8 @@ const MyPatients: React.FC<{}> = () => {
           dispatch(setExploredCohort(cohortResp))
           if (cohortResp.originalPatients?.[0]) {
             setDeidentifiedBoolean(
-              cohortResp.originalPatients?.[0].extension?.filter(
-                (data) => data.url === 'deidentified'
-              )?.[0].valueBoolean
+              cohortResp.originalPatients?.[0].extension?.filter((data) => data.url === 'deidentified')?.[0]
+                .valueBoolean ?? true
             )
           }
         }
@@ -141,9 +138,7 @@ const MyPatients: React.FC<{}> = () => {
             genderRepartitionMap={myPatients.genderRepartitionMap}
           />
         )}
-        {selectedTab === 'documents' && (
-          <CohortDocuments />
-        )}
+        {selectedTab === 'documents' && <CohortDocuments deidentifiedBoolean={deidentifiedBoolean} />}
       </div>
     </Grid>
   ) : (

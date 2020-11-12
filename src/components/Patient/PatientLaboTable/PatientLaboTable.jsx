@@ -30,12 +30,8 @@ const PatientLaboTable = ({ patient }) => {
         patient.labResults.map((labResult) => ({
           id: labResult.resource.id,
           type: labResult.resource.code.coding[0].display,
-          sampleType: labResult.resource.bodySite
-            ? labResult.resource.bodySite.coding[0].code
-            : '-',
-          date: new Date(
-            labResult.resource.effectiveDateTime
-          ).toLocaleDateString('fr-FR'),
+          sampleType: labResult.resource.bodySite ? labResult.resource.bodySite.coding[0].code : '-',
+          date: new Date(labResult.resource.effectiveDateTime).toLocaleDateString('fr-FR'),
           value: labResult.resource.valueQuantity
             ? `${labResult.resource.valueQuantity.value} ${labResult.resource.valueQuantity.unit}`
             : labResult.resource.interpretation
@@ -52,32 +48,12 @@ const PatientLaboTable = ({ patient }) => {
   }
 
   return (
-    <Grid
-      container
-      item
-      xs={11}
-      justify="flex-end"
-      className={classes.labTable}
-    >
+    <Grid container item xs={11} justify="flex-end" className={classes.labTable}>
       <div className={classes.labButtons}>
-        <Grid
-          item
-          container
-          xs={10}
-          alignItems="center"
-          className={classes.searchBar}
-        >
-          <InputBase
-            placeholder="Rechercher"
-            className={classes.input}
-            disabled
-          />
+        <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
+          <InputBase placeholder="Rechercher" className={classes.input} disabled />
           <IconButton type="submit" aria-label="search" disabled>
-            <SearchIcon
-              className={classes.searchIcon}
-              fill="#ED6D91"
-              height="15px"
-            />
+            <SearchIcon className={classes.searchIcon} fill="#ED6D91" height="15px" />
           </IconButton>
         </Grid>
         <Button
@@ -110,18 +86,16 @@ const PatientLaboTable = ({ patient }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {labResults
-              .slice((page - 1) * labItemNumber, page * labItemNumber)
-              .map((res) => {
-                return (
-                  <TableRow className={classes.tableBodyRows} key={res.id}>
-                    <TableCell align="left">{res.type}</TableCell>
-                    <TableCell align="center">{res.sampleType}</TableCell>
-                    <TableCell align="center">{res.date}</TableCell>
-                    <TableCell align="center">{res.value}</TableCell>
-                  </TableRow>
-                )
-              })}
+            {labResults.slice((page - 1) * labItemNumber, page * labItemNumber).map((res) => {
+              return (
+                <TableRow className={classes.tableBodyRows} key={res.id}>
+                  <TableCell align="left">{res.type}</TableCell>
+                  <TableCell align="center">{res.sampleType}</TableCell>
+                  <TableCell align="center">{res.date}</TableCell>
+                  <TableCell align="center">{res.value}</TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </TableContainer>

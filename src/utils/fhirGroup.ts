@@ -10,11 +10,7 @@ import {
   InclusionCriteria,
   InclusionCriteriaTypes
 } from 'types'
-import {
-  PatientGenderKind,
-  IDocumentReference,
-  IGroup_Characteristic
-} from '@ahryman40k/ts-fhir-types/lib/R4'
+import { PatientGenderKind, IDocumentReference, IGroup_Characteristic } from '@ahryman40k/ts-fhir-types/lib/R4'
 import { getApiResponseResources } from './apiHelpers'
 
 export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
@@ -28,8 +24,7 @@ export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
           valueCodeableConcept: {
             coding: [
               {
-                code: genders.find((gender) => gender.id === criterion.gender)
-                  ?.fhir,
+                code: genders.find((gender) => gender.id === criterion.gender)?.fhir,
                 system: 'http://hl7.org/fhir/administrative-gender'
               }
             ]
@@ -40,9 +35,7 @@ export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
         // Characteristic for age
         characteristics.push({
           code: {
-            coding: [
-              { code: '63900-5', display: 'Current age or age at death' }
-            ]
+            coding: [{ code: '63900-5', display: 'Current age or age at death' }]
           },
           valueRange: {
             ...(criterion.ageMin !== 0 && {
@@ -63,7 +56,7 @@ export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
         })
       }
       break
-    case 'Diagnostiques CIM':
+    case 'Diagnostic CIM':
       // Characteristic for CIM
       characteristics = [
         {
@@ -74,8 +67,7 @@ export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
             coding: [
               {
                 code: criterion.CIMDiagnosis['DIAGNOSIS CODE'],
-                system: CIMTypes.find((type) => type.id === criterion.CIMTypeId)
-                  ?.system
+                system: CIMTypes.find((type) => type.id === criterion.CIMTypeId)?.system
               }
             ]
           }
@@ -90,9 +82,7 @@ export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
             coding: [
               {
                 code: criterion.searchFieldCode,
-                display: criteriaSearchFields.find(
-                  (field) => field.code === criterion.searchFieldCode
-                )?.display
+                display: criteriaSearchFields.find((field) => field.code === criterion.searchFieldCode)?.display
               }
             ]
           },
@@ -109,24 +99,18 @@ export const criterionToCharacteristics = (criterion: InclusionCriteria) => {
   return characteristics
 }
 
-export const diagnosticsCriterionToQuery = (
-  criterion: CIMDiagnosticInclusionCriteria
-) => {
+export const diagnosticsCriterionToQuery = (criterion: CIMDiagnosticInclusionCriteria) => {
   return `_has:DiagnosticReport:subject:code.coding.code=${criterion.CIMDiagnosis['DIAGNOSIS CODE']}`
 }
 
-export const demographicCriterionToQuery = (
-  criterion: PatientDemographyInclusionCriteria
-) => {
-  let params: string[] = []
+export const demographicCriterionToQuery = (criterion: PatientDemographyInclusionCriteria) => {
+  const params: string[] = []
   const now = new Date()
   const month = ('0' + (now.getUTCMonth() + 1)).slice(-2)
   const day = ('0' + now.getUTCDate()).slice(-2)
 
   if (criterion.gender !== PatientGenderKind._unknown) {
-    params.push(
-      `gender=${genders.find((gender) => gender.id === criterion.gender)?.fhir}`
-    )
+    params.push(`gender=${genders.find((gender) => gender.id === criterion.gender)?.fhir}`)
   }
   if (criterion.ageMin !== 0) {
     const ref = `${now.getUTCFullYear() - criterion.ageMin}-${month}-${day}`

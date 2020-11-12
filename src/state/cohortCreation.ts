@@ -18,9 +18,7 @@ export type setPopulationSourceAction = {
   type: 'SET_POPULATION_SOURCE'
   payload: any[]
 }
-export const setPopulationSource = (
-  populationSources: any[]
-): setPopulationSourceAction => {
+export const setPopulationSource = (populationSources: any[]): setPopulationSourceAction => {
   return {
     type: 'SET_POPULATION_SOURCE',
     payload: populationSources
@@ -32,10 +30,7 @@ export type addInclusionCriteriaAction = {
   payload: { inclusionCriteria: any; index: number }
 }
 
-export const addInclusionCriteria = (
-  inclusionCriteria: any,
-  index: number
-): addInclusionCriteriaAction => {
+export const addInclusionCriteria = (inclusionCriteria: any, index: number): addInclusionCriteriaAction => {
   return {
     type: 'ADD_INCLUSION_CRITERIA',
     payload: { inclusionCriteria: inclusionCriteria, index: index }
@@ -46,9 +41,7 @@ export type removeInclusionCriteriaAction = {
   payload: number
 }
 
-export const removeInclusionCriteria = (
-  index: number
-): removeInclusionCriteriaAction => {
+export const removeInclusionCriteria = (index: number): removeInclusionCriteriaAction => {
   return {
     type: 'REMOVE_INCLUSION_CRITERIA',
     payload: index
@@ -84,7 +77,7 @@ const cohortCreation = (state = initialState, action: CohortActions) => {
         populationSources: action.payload
       }
 
-    case 'ADD_INCLUSION_CRITERIA':
+    case 'ADD_INCLUSION_CRITERIA': {
       const { inclusionCriteria, index } = action.payload
       const inclusionCriterias = [...state.inclusionCriterias]
       const newCriterias =
@@ -97,13 +90,11 @@ const cohortCreation = (state = initialState, action: CohortActions) => {
         ...state,
         inclusionCriterias: newCriterias
       }
-
+    }
     case 'REMOVE_INCLUSION_CRITERIA':
       return {
         ...state,
-        inclusionCriterias: state.inclusionCriterias.filter(
-          (criteria, index) => index !== action.payload
-        )
+        inclusionCriterias: state.inclusionCriterias.filter((criteria, index) => index !== action.payload)
       }
 
     case 'SET_COHORT_NAME': {

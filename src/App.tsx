@@ -3,29 +3,36 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ApolloProvider } from '@apollo/react-hooks'
 import ApolloClient from 'apollo-boost'
+import moment from 'moment'
 
 import { PersistGate } from 'redux-persist/integration/react'
 
 import Connexion from './views/Connexion/Connexion'
+import ArkhnConnexion from './views/Connexion/ArkhnConnexion'
 import Accueil from './views/Accueil/Accueil'
 import RechercherPatient from './views/RechercherPatient/RechercherPatient'
 import RechercheSauvegarde from './views/RechercheSauvegarde/RechercheSauvegarde'
 import Patient from './views/Patient/Patient'
 import Scope from './views/Scope/Scope'
-import Perimetre from './views/Perimetre/Perimetre'
-import Cohort from './views/Cohort/Cohort'
-import MyPatients from './views/MyPatients/MyPatients'
+import Dashboard from './views/Dashboard/Dashboard'
+// import Perimetre from './views/Perimetre/Perimetre'
+// import Cohort from './views/Cohort/Cohort'
+// import MyPatients from './views/MyPatients/MyPatients'
 import PrivateRoute from './components/Routes/Private'
 import LeftSideBar from './components/LeftSideBar/LeftSideBar'
-import CreationCohorte from './views/CreationCohorte/CreationCohorte'
+// import CohortCreation from './views/CohortCreation/CohortCreation'
 
 import { Provider } from 'react-redux'
 import { store, persistor } from './state/store'
-import { AUTH_API_URL } from './constants'
+import { AUTH_API_URL, CONTEXT } from './constants'
+
+import 'moment/locale/fr'
 
 const authClient = new ApolloClient({
   uri: AUTH_API_URL
 })
+
+moment.locale('fr')
 
 const App = () => (
   <Provider store={store}>
@@ -36,7 +43,7 @@ const App = () => (
           <Switch>
             {/* <Route path="/*" render={() => '404 not found'} /> */}
             {/* TODO: Change connexion to /login */}
-            <Route exact path="/" component={Connexion} />
+            <Route exact path="/" component={CONTEXT === 'arkhn' ? ArkhnConnexion : Connexion} />
             {/* TODO: Change home to / */}
             <PrivateRoute
               exact
@@ -84,7 +91,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <MyPatients />
+                  <Dashboard context="patients" />
                 </>
               )}
             />
@@ -94,7 +101,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <MyPatients />
+                  <Dashboard context="patients" />
                 </>
               )}
             />
@@ -113,7 +120,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <CreationCohorte />
+                  <Dashboard context="new_cohort" />
                 </>
               )}
             />
@@ -122,7 +129,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <CreationCohorte />
+                  <Dashboard context="new_cohort" />
                 </>
               )}
             />
@@ -131,7 +138,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <Cohort />
+                  <Dashboard context="cohort" />
                 </>
               )}
             />
@@ -140,7 +147,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <Cohort />
+                  <Dashboard context="cohort" />
                 </>
               )}
             />
@@ -149,7 +156,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <Perimetre />
+                  <Dashboard context="perimeters" />
                 </>
               )}
             />
@@ -158,7 +165,7 @@ const App = () => (
               render={() => (
                 <>
                   <LeftSideBar />
-                  <Perimetre />
+                  <Dashboard context="perimeters" />
                 </>
               )}
             />

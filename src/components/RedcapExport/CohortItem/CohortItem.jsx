@@ -21,12 +21,8 @@ const CohortItem = (props) => {
   const classes = useStyles()
 
   const names = CRF_ATTRIBUTES.map((x) => x.officialName)
-  const [customName, setCustomName] = useState(
-    props.crfAttribute.officialName
-  )
-  const [textSearch, setTextSearch] = useState(
-    props.crfAttribute.officialName
-  )
+  const [customName, setCustomName] = useState(props.crfAttribute.officialName)
+  const [textSearch, setTextSearch] = useState(props.crfAttribute.officialName)
 
   const [anonymise, setAnonymise] = useState(props.crfAttribute.anonymize)
 
@@ -40,8 +36,7 @@ const CohortItem = (props) => {
         textLabel += `l'information sera aggrégée selon une hiérachie de type "${props.crfAttribute.hierarchy_type}".`
         break
       case 'sensitive':
-        textLabel +=
-          "l'information sera protégée par le critère de L-diversity."
+        textLabel += "l'information sera protégée par le critère de L-diversity."
         break
       case 'insensitive':
         textLabel += "l'information ne sera pas modifiée."
@@ -111,11 +106,7 @@ const CohortItem = (props) => {
           onChange={(evt, i) => onLabelChange(evt, i)}
           className={classes.attributeSelect}
           disableUnderline
-          value={
-            props.crfAttribute.officialName
-              ? props.crfAttribute.officialName
-              : CRF_ATTRIBUTES[0].officialName
-          }
+          value={props.crfAttribute.officialName ? props.crfAttribute.officialName : CRF_ATTRIBUTES[0].officialName}
         >
           {renderSelectOptions()}
         </Select>
@@ -148,7 +139,7 @@ const CohortItem = (props) => {
       <TableCell className={classes.tableCell} align="right">
         <Button
           variant="contained"
-          onClick={(evt) => {
+          onClick={() => {
             props.onRemove(props.crfAttribute)
           }}
           className={classes.crfButton}

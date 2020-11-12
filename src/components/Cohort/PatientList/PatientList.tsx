@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import Grid from '@material-ui/core/Grid'
-import Paper from '@material-ui/core/Paper'
-import Typography from '@material-ui/core/Typography'
-import InputBase from '@material-ui/core/InputBase'
-import IconButton from '@material-ui/core/IconButton'
-import Button from '@material-ui/core/Button'
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem'
+
+import {
+  Button,
+  CssBaseline,
+  Grid,
+  IconButton,
+  InputBase,
+  MenuItem,
+  Paper,
+  Select,
+  Typography
+} from '@material-ui/core'
 
 import PatientFilters from '../../Filters/PatientFilters/PatientFilters'
 import TableauPatient from '../../TableauPatients/TableauPatients'
@@ -21,33 +24,23 @@ import { ReactComponent as FilterList } from '../../../assets/icones/filter.svg'
 import LockIcon from '@material-ui/icons/Lock'
 
 import { fetchPatientList } from '../../../services/cohortInfos'
+import { PatientGenderKind } from '@ahryman40k/ts-fhir-types/lib/R4'
+import { CohortPatient, ComplexChartDataType, SearchByTypes, VitalStatus } from 'types'
+import { getGenderRepartitionSimpleData } from 'utils/graphUtils'
 
 import useStyles from './styles'
-import { IPatient, PatientGenderKind } from '@ahryman40k/ts-fhir-types/lib/R4'
-import { ComplexChartDataType, SearchByTypes, VitalStatus } from 'types'
-import { getGenderRepartitionSimpleData } from 'utils/graphUtils'
 
 type PatientListProps = {
   total: number
   groupId?: string
   deidentified?: boolean
-  patients: IPatient[]
+  patients: CohortPatient[]
   loading?: boolean
-  agePyramidData?: ComplexChartDataType<
-    number,
-    { male: number; female: number; other?: number }
-  >
+  agePyramidData?: ComplexChartDataType<number, { male: number; female: number; other?: number }>
   genderRepartitionMap?: ComplexChartDataType<PatientGenderKind>
 }
 
-const PatientList: React.FC<PatientListProps> = ({
-  groupId,
-  total,
-  deidentified,
-  patients,
-  loading,
-  ...props
-}) => {
+const PatientList: React.FC<PatientListProps> = ({ groupId, total, deidentified, patients, loading, ...props }) => {
   const classes = useStyles()
   const [page, setPage] = useState(1)
   const [totalPatients, setTotalPatients] = useState(total)
@@ -56,62 +49,25 @@ const PatientList: React.FC<PatientListProps> = ({
   const [searchInput, setSearchInput] = useState('')
   const [searchBy, setSearchBy] = useState<SearchByTypes>(SearchByTypes.text)
   const [agePyramid, setAgePyramid] = useState(props.agePyramidData)
-  const [patientData, setPatientData] = useState(
-    getGenderRepartitionSimpleData(props.genderRepartitionMap)
-  )
+  const [patientData, setPatientData] = useState(getGenderRepartitionSimpleData(props.genderRepartitionMap))
   const [open, setOpen] = useState(false)
-  const [gender, setGender] = useState<PatientGenderKind>(
-    PatientGenderKind._unknown
-  )
+  const [gender, setGender] = useState<PatientGenderKind>(PatientGenderKind._unknown)
   const [age, setAge] = useState<[number, number]>([0, 130])
   const [vitalStatus, setVitalStatus] = useState<VitalStatus>(VitalStatus.all)
+  const [sortBy, setSortBy] = useState('given') // eslint-disable-line
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc') // eslint-disable-line
   const includeFacets = true
 
   const handleOpenDialog = () => {
     setOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setOpen(false)
-    handleChangePage()
-  }
-
-  const handleChangeSelect = (
-    event: React.ChangeEvent<{
-      name?: string | undefined
-      value: unknown
-    }>,
-    child: React.ReactNode
-  ) => {
-    setSearchBy(event.target.value as SearchByTypes)
-  }
-
-  const handleChangeInput = (
-    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    setSearchInput(event.target.value)
-  }
-
-  const fetchPatients = (pageValue: number = 1) => {
+  const fetchPatients = (pageValue = 1) => {
     setLoadingStatus(true)
-    fetchPatientList(
-      pageValue,
-      searchBy,
-      searchInput,
-      gender,
-      age,
-      vitalStatus,
-      groupId,
-      includeFacets
-    )
+    fetchPatientList(pageValue, searchBy, searchInput, gender, age, vitalStatus, groupId, includeFacets)
       .then((result) => {
         if (result) {
-          const {
-            totalPatients,
-            originalPatients,
-            genderRepartitionMap,
-            agePyramidData
-          } = result
+          const { totalPatients, originalPatients, genderRepartitionMap, agePyramidData } = result
           setPatientsList(originalPatients)
           setPatientData(getGenderRepartitionSimpleData(genderRepartitionMap))
           setAgePyramid(agePyramidData)
@@ -124,10 +80,30 @@ const PatientList: React.FC<PatientListProps> = ({
       })
   }
 
-  const handleChangePage = (
-    event?: React.ChangeEvent<unknown>,
-    value: number = 1
+  const onSearchPatient = () => {
+    setPage(1)
+    fetchPatients()
+  }
+
+  const handleCloseDialog = (submit: boolean) => () => {
+    setOpen(false)
+    submit && onSearchPatient()
+  }
+
+  const handleChangeSelect = (
+    event: React.ChangeEvent<{
+      name?: string | undefined
+      value: unknown
+    }>
   ) => {
+    setSearchBy(event.target.value as SearchByTypes)
+  }
+
+  const handleChangeInput = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    setSearchInput(event.target.value)
+  }
+
+  const handleChangePage = (event?: React.ChangeEvent<unknown>, value = 1) => {
     setPage(value)
     //We only fetch patients if we don't already have them
     if (totalPatients > patients.length) {
@@ -135,14 +111,7 @@ const PatientList: React.FC<PatientListProps> = ({
     }
   }
 
-  const onSearchPatient = () => {
-    setPage(1)
-    fetchPatients()
-  }
-
-  const onKeyDown = (
-    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     if (e.keyCode === 13) {
       e.preventDefault()
       onSearchPatient()
@@ -197,31 +166,17 @@ const PatientList: React.FC<PatientListProps> = ({
               {deidentified ? (
                 <Grid container alignItems="center">
                   <LockIcon />
-                  <Typography variant="h6">
-                    Les données patients sont pseudonymisées.
-                  </Typography>
+                  <Typography variant="h6">Recherche désactivée car patients dé-identifiés.</Typography>
                 </Grid>
               ) : (
                 <>
-                  <Select
-                    value={searchBy}
-                    onChange={handleChangeSelect}
-                    className={classes.select}
-                  >
-                    <MenuItem value={SearchByTypes.text}>
-                      Tous les champs
-                    </MenuItem>
+                  <Select value={searchBy} onChange={handleChangeSelect} className={classes.select}>
+                    <MenuItem value={SearchByTypes.text}>Tous les champs</MenuItem>
                     <MenuItem value={SearchByTypes.family}>Nom</MenuItem>
                     <MenuItem value={SearchByTypes.given}>Prénom</MenuItem>
                     <MenuItem value={SearchByTypes.identifier}>IPP</MenuItem>
                   </Select>
-                  <Grid
-                    item
-                    container
-                    xs={10}
-                    alignItems="center"
-                    className={classes.searchBar}
-                  >
+                  <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
                     <InputBase
                       placeholder="Rechercher"
                       className={classes.input}
@@ -229,24 +184,9 @@ const PatientList: React.FC<PatientListProps> = ({
                       onChange={handleChangeInput}
                       onKeyDown={onKeyDown}
                     />
-                    <IconButton
-                      type="submit"
-                      aria-label="search"
-                      onClick={onSearchPatient}
-                    >
+                    <IconButton type="submit" aria-label="search" onClick={onSearchPatient}>
                       <SearchIcon fill="#ED6D91" height="15px" />
                     </IconButton>
-                    <PatientFilters
-                      open={open}
-                      onClose={() => setOpen(false)}
-                      onSubmit={handleCloseDialog}
-                      gender={gender}
-                      onChangeGender={setGender}
-                      age={age}
-                      onChangeAge={setAge}
-                      vitalStatus={vitalStatus}
-                      onChangeVitalStatus={setVitalStatus}
-                    />
                   </Grid>
                 </>
               )}
@@ -259,6 +199,17 @@ const PatientList: React.FC<PatientListProps> = ({
               >
                 Filtrer
               </Button>
+              <PatientFilters
+                open={open}
+                onClose={handleCloseDialog(false)}
+                onSubmit={handleCloseDialog(true)}
+                gender={gender}
+                onChangeGender={setGender}
+                age={age}
+                onChangeAge={setAge}
+                vitalStatus={vitalStatus}
+                onChangeVitalStatus={setVitalStatus}
+              />
             </div>
           </Grid>
           <TableauPatient
@@ -268,6 +219,8 @@ const PatientList: React.FC<PatientListProps> = ({
             onChangePage={handleChangePage}
             page={page}
             totalPatientCount={totalPatients}
+            sortBy={sortBy}
+            sortDirection={'asc'}
           />
         </Grid>
       </Grid>

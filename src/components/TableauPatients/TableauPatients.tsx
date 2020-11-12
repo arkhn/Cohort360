@@ -9,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Paper,
   Chip
 } from '@material-ui/core'
@@ -16,7 +17,7 @@ import Pagination from '@material-ui/lab/Pagination'
 
 import { ReactComponent as FemaleIcon } from '../../assets/icones/venus.svg'
 import { ReactComponent as MaleIcon } from '../../assets/icones/mars.svg'
-import UnknownIcon from '@material-ui/icons/HelpOutline'
+import { ReactComponent as UnknownIcon } from '../../assets/icones/autre-inconnu.svg'
 
 import { getAge } from 'utils/age'
 import useStyles from './styles'
@@ -31,10 +32,10 @@ type PatientGenderProps = {
 const PatientGender: React.FC<PatientGenderProps> = ({ gender, className }) => {
   switch (gender) {
     case PatientGenderKind._male:
-      return <FemaleIcon className={className} />
+      return <MaleIcon className={className} />
 
     case PatientGenderKind._female:
-      return <MaleIcon className={className} />
+      return <FemaleIcon className={className} />
 
     default:
       return <UnknownIcon className={className} />
@@ -62,6 +63,8 @@ type TableauPatientsProps = {
   page: number
   rowsPerPage?: number
   totalPatientCount: number
+  sortBy: string
+  sortDirection: 'asc' | 'desc'
 }
 const TableauPatients: React.FC<TableauPatientsProps> = memo(
   ({
@@ -71,17 +74,16 @@ const TableauPatients: React.FC<TableauPatientsProps> = memo(
     onChangePage,
     page,
     totalPatientCount,
-    rowsPerPage = 20
+    rowsPerPage = 20,
+    sortBy,
+    sortDirection
   }) => {
     const history = useHistory()
     const classes = useStyles()
 
     const patientsToShow =
       patients.length > rowsPerPage
-        ? patients.slice(
-            (page - 1) * rowsPerPage,
-            (page - 1) * rowsPerPage + rowsPerPage
-          )
+        ? patients.slice((page - 1) * rowsPerPage, (page - 1) * rowsPerPage + rowsPerPage)
         : patients
 
     return loading ? (
@@ -93,24 +95,40 @@ const TableauPatients: React.FC<TableauPatientsProps> = memo(
             <TableHead>
               <TableRow className={classes.tableHead}>
                 <TableCell align="center" className={classes.tableHeadCell}>
-                  Sexe
+                  <TableSortLabel
+                    // direction={orderBy === headCell.id ? order : 'asc'}
+                    // onClick={createSortHandler(headCell.id)}
+                    active={sortBy === 'gender'}
+                    direction={sortDirection}
+                  >
+                    Sexe
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell className={classes.tableHeadCell}>Prénom</TableCell>
-                <TableCell className={classes.tableHeadCell}>Nom</TableCell>
                 <TableCell className={classes.tableHeadCell}>
-                  Date de naissance
+                  <TableSortLabel
+                    active={sortBy === 'given'}
+                    direction={sortDirection}
+                    onClick={(e) => console.log(e.target)}
+                  >
+                    Prénom
+                  </TableSortLabel>
                 </TableCell>
                 <TableCell className={classes.tableHeadCell}>
-                  Dernier lieu de prise en charge
+                  <TableSortLabel active={sortBy === 'family'} direction={sortDirection}>
+                    Nom
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell className={classes.tableHeadCell}>
-                  Statut vital
+                <TableCell align="center" className={classes.tableHeadCell}>
+                  {deidentified ? 'Âge' : 'Date de naissance'}
+                  <TableSortLabel active={sortBy === 'birthdate'} direction={sortDirection}>
+                    Date de naissance
+                  </TableSortLabel>
                 </TableCell>
-                {!deidentified && (
-                  <TableCell className={classes.tableHeadCell}>
-                    N° IPP
-                  </TableCell>
-                )}
+                <TableCell className={classes.tableHeadCell}>Dernier lieu de prise en charge</TableCell>
+                <TableCell className={classes.tableHeadCell}>Statut vital</TableCell>
+                <TableCell align="center" className={classes.tableHeadCell}>
+                  {deidentified ? 'ID Technique Patient' : 'N° IPP'}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -125,45 +143,26 @@ const TableauPatients: React.FC<TableauPatientsProps> = memo(
                         onClick={() => history.push(`/patients/${patient.id}`)}
                       >
                         <TableCell align="center">
-                          {patient.gender && (
-                            <PatientGender
-                              gender={patient.gender}
-                              className={classes.genderIcon}
-                            />
-                          )}
+                          {patient.gender && <PatientGender gender={patient.gender} className={classes.genderIcon} />}
                         </TableCell>
-                        <TableCell>
-                          {deidentified
-                            ? 'Prénom'
-                            : patient.name?.[0].given?.[0]}
-                        </TableCell>
-                        <TableCell>
-                          {deidentified
-                            ? 'Nom'
-                            : patient.name?.map((e) => e.family).join(' ')}
-                        </TableCell>
-                        <TableCell>
-                          {deidentified
-                            ? getAge(patient)
-                            : `${patient.birthDate} (${getAge(patient)})`}
+                        <TableCell>{deidentified ? 'Prénom' : patient.name?.[0].given?.[0]}</TableCell>
+                        <TableCell>{deidentified ? 'Nom' : patient.name?.map((e) => e.family).join(' ')}</TableCell>
+                        <TableCell align="center">
+                          {deidentified ? getAge(patient) : `${patient.birthDate} (${getAge(patient)})`}
                         </TableCell>
                         <TableCell>{patient.lastEncounterName}</TableCell>
                         <TableCell>
-                          <StatusShip
-                            type={
-                              patient.deceasedDateTime ? 'Décédé' : 'Vivant'
-                            }
-                          />
+                          <StatusShip type={patient.deceasedDateTime ? 'Décédé' : 'Vivant'} />
                         </TableCell>
-                        {!deidentified && (
-                          <TableCell>
-                            {/* {
-                            patient.identifier.find(
-                              (item) => item.type.coding[0].code === 'IPP'
-                            ).value
-                          } */}
-                          </TableCell>
-                        )}
+
+                        <TableCell align="center">
+                          {deidentified
+                            ? patient.id
+                            : patient.identifier?.find((identifier) => identifier.type?.coding?.[0].code === 'IPP')
+                                ?.value ??
+                              patient.identifier?.[0].value ??
+                              'IPP inconnnu'}
+                        </TableCell>
                       </TableRow>
                     )
                   )

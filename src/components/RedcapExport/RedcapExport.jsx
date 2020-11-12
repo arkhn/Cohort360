@@ -137,9 +137,7 @@ const RedcapExport = (props) => {
               <ToggleButton value={2}>Anonymisation</ToggleButton>
             </ToggleButtonGroup>
           </div>
-          {anonymization === 2 && (
-            <AnonymisationParameter setK={setK} setL={setL} />
-          )}
+          {anonymization === 2 && <AnonymisationParameter setK={setK} setL={setL} />}
           <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
               <TableHead>
@@ -173,13 +171,7 @@ const RedcapExport = (props) => {
               </TableHead>
               <TableBody>
                 {crfAttribute.map((form, index) => {
-                  return (
-                    <CohortItem
-                      crfAttribute={form}
-                      key={index}
-                      onRemove={removeItem}
-                    />
-                  )
+                  return <CohortItem crfAttribute={form} key={index} onRemove={removeItem} />
                 })}
               </TableBody>
             </Table>
@@ -203,10 +195,7 @@ const RedcapExport = (props) => {
                       </IconButton>
                     }
                   >
-                    <div>
-                      Une erreur est survenue, les paramètres d'anonymisation
-                      sont peut être trop stringeant.
-                    </div>
+                    <div>Une erreur est survenue, les paramètres d'anonymisation sont peut être trop stringeant.</div>
                     <div>{error}</div>
                   </Alert>
                 </Collapse>
@@ -233,58 +222,41 @@ const RedcapExport = (props) => {
                 )
               )}
             </div>
-            <Button
-              className={classes.exportButton}
-              variant="contained"
-              color="primary"
-              onClick={exportCSV}
-            >
+            <Button className={classes.exportButton} variant="contained" color="primary" onClick={exportCSV}>
               Export
             </Button>
           </div>
-          <Button
-            className={classes.addButton}
-            variant="contained"
-            onClick={handleAddButton}
-          >
+          <Button className={classes.addButton} variant="contained" onClick={handleAddButton}>
             <AddIcon />
           </Button>
 
           <Alert severity="info" className={classes.alertREDCAP}>
             <AlertTitle></AlertTitle>
             <div>
-              L'export permet de télécharger un csv au format compatible avec{' '}
-              <strong>eCRF</strong> (e.g. REDCap)
+              L'export permet de télécharger un csv au format compatible avec <strong>eCRF</strong> (e.g. REDCap)
             </div>
             <div>
-              Les attributs exportables donnent par défaut la valeur de
-              l'attribut, en précisant le <i>Champ de recherche</i>, la valeur
-              retournée est 1 si le patient possède ce champs 0 sinon.
+              Les attributs exportables donnent par défaut la valeur de l'attribut, en précisant le{' '}
+              <i>Champ de recherche</i>, la valeur retournée est 1 si le patient possède ce champs 0 sinon.
             </div>
-            <div>
-              Vous pouvez choisir d'exporter un fichier brut, pseudonymisé ou
-              anonymisé
-            </div>
+            <div>Vous pouvez choisir d'exporter un fichier brut, pseudonymisé ou anonymisé</div>
             <div>La pseudonymisation supprime les attributs identifiants</div>
             <div>
-              L'anonymisation fournit un niveau de protection supplémentaire,
-              transfomant les attributs qui, couplés à des informations
-              extérieures, permettent d'identifier un individu.
+              L'anonymisation fournit un niveau de protection supplémentaire, transfomant les attributs qui, couplés à
+              des informations extérieures, permettent d'identifier un individu.
             </div>
             <div>
-              La <strong>K-anonymity</strong> assure que chaque individu inclus
-              dans le dataset anonymisé est indistinguable d'au moins K-1
-              individus également inclus dans le dataset anonymisé (définissant
-              une classe d'équivalence).
+              La <strong>K-anonymity</strong> assure que chaque individu inclus dans le dataset anonymisé est
+              indistinguable d'au moins K-1 individus également inclus dans le dataset anonymisé (définissant une classe
+              d'équivalence).
             </div>
             <div>
-              La <strong>L-diversity</strong> assure que chaque classe
-              d'équivalence contient au moins L valeurs distinctes d'attributs
-              sensibles.
+              La <strong>L-diversity</strong> assure que chaque classe d'équivalence contient au moins L valeurs
+              distinctes d'attributs sensibles.
             </div>
             <div className={classes.importantText}>
-              Lorsqu'un attribut a servi à construire la cohorte, il est
-              conseillé de désactiver l'anonymisation associée.
+              Lorsqu'un attribut a servi à construire la cohorte, il est conseillé de désactiver l'anonymisation
+              associée.
             </div>
           </Alert>
         </div>

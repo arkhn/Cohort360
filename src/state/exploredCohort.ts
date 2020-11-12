@@ -29,9 +29,7 @@ type SetExploredCohortAction = {
   payload?: CohortData
 }
 
-export const setExploredCohort = (
-  payload?: CohortData
-): SetExploredCohortAction => {
+export const setExploredCohort = (payload?: CohortData): SetExploredCohortAction => {
   return {
     type: 'SET_EXPLORED_COHORT',
     payload
@@ -42,9 +40,7 @@ type AddImportedPatientsAction = {
   type: 'ADD_IMPORTED_PATIENTS'
   payload: any[]
 }
-export const addImportedPatients = (
-  patients: any[]
-): AddImportedPatientsAction => {
+export const addImportedPatients = (patients: any[]): AddImportedPatientsAction => {
   return {
     type: 'ADD_IMPORTED_PATIENTS',
     payload: patients
@@ -55,9 +51,7 @@ type removeImportedPatientsAction = {
   payload: any[]
 }
 
-export const removeImportedPatients = (
-  patients: any[]
-): removeImportedPatientsAction => {
+export const removeImportedPatients = (patients: any[]): removeImportedPatientsAction => {
   return {
     type: 'REMOVE_IMPORTED_PATIENTS',
     payload: patients
@@ -92,9 +86,7 @@ type removeExcludedPatientsAction = {
   type: 'REMOVE_EXCLUDED_PATIENTS'
   payload: any[]
 }
-export const removeExcludedPatients = (
-  patients: any[]
-): removeExcludedPatientsAction => {
+export const removeExcludedPatients = (patients: any[]): removeExcludedPatientsAction => {
   return {
     type: 'REMOVE_EXCLUDED_PATIENTS',
     payload: patients
@@ -105,9 +97,7 @@ type updateCohortsAction = {
   type: 'UPDATE_COHORT'
   payload: IGroup_Member[]
 }
-export const updateCohort = (
-  patients: IGroup_Member[]
-): updateCohortsAction => {
+export const updateCohort = (patients: IGroup_Member[]): updateCohortsAction => {
   return {
     type: 'UPDATE_COHORT',
     payload: patients
@@ -142,9 +132,7 @@ const exploredCohort = (
       const listId = action.payload.map((patient) => patient.id)
       return {
         ...state,
-        importedPatients: state.importedPatients.filter(
-          (patient) => !listId.includes(patient.id)
-        )
+        importedPatients: state.importedPatients.filter((patient) => !listId.includes(patient.id))
       }
     }
 
@@ -178,8 +166,7 @@ const exploredCohort = (
           (patient) => !action.payload.map((p) => p.id).includes(patient.id)
         ),
         excludedPatients: allExcludedPatients.filter(
-          (patient, index, self) =>
-            index === self.findIndex((t) => t.id === patient.id)
+          (patient, index, self) => index === self.findIndex((t) => t.id === patient.id)
         ),
         importedPatients: allImportedPatients
       }
@@ -201,9 +188,7 @@ const exploredCohort = (
       return {
         ...state,
         cohort:
-          Array.isArray(state.cohort) || !state.cohort
-            ? state.cohort
-            : { ...state.cohort, member: action.payload },
+          Array.isArray(state.cohort) || !state.cohort ? state.cohort : { ...state.cohort, member: action.payload },
         importedPatients: [],
         includedPatients: [],
         excludedPatients: []

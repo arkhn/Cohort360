@@ -16,10 +16,7 @@ type PatientSearchBarProps = {
   showSelect?: boolean
 }
 
-const PatientSearchBar: React.FC<PatientSearchBarProps> = ({
-  performQueries,
-  showSelect
-}) => {
+const PatientSearchBar: React.FC<PatientSearchBarProps> = ({ performQueries, showSelect }) => {
   const classes = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -32,21 +29,16 @@ const PatientSearchBar: React.FC<PatientSearchBarProps> = ({
     event: React.ChangeEvent<{
       name?: string | undefined
       value: unknown
-    }>,
-    child: React.ReactNode
+    }>
   ) => {
     setSearchBy(event.target.value as SearchByTypes)
   }
 
-  const handleChangeInput = (
-    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
+  const handleChangeInput = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     setSearchInput(event.target.value)
   }
 
-  const onKeyDown = async (
-    event: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
+  const onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     if (event.keyCode === 13) {
       event.preventDefault()
       if (location.pathname === '/accueil') {
@@ -77,13 +69,7 @@ const PatientSearchBar: React.FC<PatientSearchBarProps> = ({
           </Select>
         </Grid>
       )}
-      <Grid
-        item
-        container
-        xs={showSelect ? 10 : 12}
-        alignItems="center"
-        className={classes.searchBar}
-      >
+      <Grid item container xs={showSelect ? 10 : 12} alignItems="center" className={classes.searchBar}>
         <InputBase
           placeholder="Rechercher les données d'un patient: IPP, Nom ou Prénom"
           className={classes.input}

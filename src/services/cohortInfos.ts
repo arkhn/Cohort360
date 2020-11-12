@@ -1,19 +1,14 @@
 import api from './api'
 import { getInfos, getLastEncounter } from './myPatients'
 import { CONTEXT, API_RESOURCE_TAG } from '../constants'
-import {
-  FHIR_API_Response,
-  CohortData,
-  ComplexChartDataType,
-  SearchByTypes,
-  VitalStatus
-} from 'types'
+import { FHIR_API_Response, CohortData, ComplexChartDataType, SearchByTypes, VitalStatus } from 'types'
 import {
   IGroup,
   IPatient,
   IEncounter,
   IComposition,
-  PatientGenderKind
+  PatientGenderKind,
+  IDocumentReference
 } from '@ahryman40k/ts-fhir-types/lib/R4'
 import { getApiResponseResources } from 'utils/apiHelpers'
 import {
@@ -28,72 +23,53 @@ import {
 } from 'utils/graphUtils'
 import { searchPatient } from './searchPatient'
 import { getAge } from 'utils/age'
-import { fetchPerimetersInfos } from './perimeters'
+// import { fetchPerimetersInfos } from './perimeters'
 
-const fetchCohort = async (
-  cohortId: string
-): Promise<CohortData | undefined> => {
+const fetchCohort = async (cohortId: string | undefined): Promise<CohortData | undefined> => {
   if (CONTEXT === 'aphp') {
     const [cohortResp, patientsResp, encountersResp] = await Promise.all([
       api.get<FHIR_API_Response<IGroup>>(`/Group?_id=${cohortId}`),
       api.get<FHIR_API_Response<IPatient>>(
-        `/Patient?pivotFacet=age_gender,deceased_gender&_list=${cohortId}&size=20`
+        `/Patient?pivotFacet=age_gender,deceased_gender&_list=${cohortId}&size=20&_sort=given`
       ),
       api.get<FHIR_API_Response<IEncounter>>(
         `/Encounter?pivotFacet=start-date_start-date-month_gender&facet=class&_list=${cohortId}&size=1`
       )
     ])
 
-    const name =
-      cohortResp.data.resourceType === 'Bundle'
-        ? cohortResp.data.entry?.[0].resource?.name
-        : '-'
+    const name = cohortResp.data.resourceType === 'Bundle' ? cohortResp.data.entry?.[0].resource?.name : '-'
 
-    const cohort =
-      cohortResp.data.resourceType === 'Bundle'
-        ? cohortResp.data.entry?.[0].resource
-        : undefined
+    const cohort = cohortResp.data.resourceType === 'Bundle' ? cohortResp.data.entry?.[0].resource : undefined
 
-    const totalPatients =
-      patientsResp.data.resourceType === 'Bundle' ? patientsResp.data.total : 0
+    const totalPatients = patientsResp.data.resourceType === 'Bundle' ? patientsResp.data.total : 0
 
-    const originalPatients = await getLastEncounter(
-      getApiResponseResources(patientsResp)
-    )
+    const originalPatients = await getLastEncounter(getApiResponseResources(patientsResp))
 
     const agePyramidData =
       patientsResp.data.resourceType === 'Bundle'
         ? getAgeRepartitionMapAphp(
-            patientsResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-age-month'
-            )?.[0].extension
+            patientsResp.data.meta?.extension?.find((facet: any) => facet.url === 'facet-age-month')?.extension
           )
         : undefined
 
     const genderRepartitionMap =
       patientsResp.data.resourceType === 'Bundle'
         ? getGenderRepartitionMapAphp(
-            patientsResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-deceased'
-            )?.[0].extension
+            patientsResp.data.meta?.extension?.find((facet: any) => facet.url === 'facet-deceased')?.extension
           )
         : undefined
 
     const monthlyVisitData =
       encountersResp.data.resourceType === 'Bundle'
         ? getVisitRepartitionMapAphp(
-            encountersResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-start-date-facet'
-            )?.[0].extension
+            encountersResp.data.meta?.extension?.find((facet: any) => facet.url === 'facet-start-date-facet')?.extension
           )
         : undefined
 
     const visitTypeRepartitionData =
       encountersResp.data.resourceType === 'Bundle'
         ? getEncounterRepartitionMapAphp(
-            encountersResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-class-simple'
-            )?.[0].extension
+            encountersResp.data.meta?.extension?.find((facet: any) => facet.url === 'facet-class-simple')?.extension
           )
         : undefined
 
@@ -112,9 +88,7 @@ const fetchCohort = async (
   if (CONTEXT === 'arkhn') {
     const cohortResult: CohortData = {}
     const cohort = getApiResponseResources(
-      await api.get<FHIR_API_Response<IGroup>>(
-        `/Group?_id=${cohortId}${API_RESOURCE_TAG}`
-      )
+      await api.get<FHIR_API_Response<IGroup>>(`/Group?_id=${cohortId}${API_RESOURCE_TAG}`)
     )?.[0]
 
     if (cohort) {
@@ -133,14 +107,8 @@ const fetchCohort = async (
       }
 
       const [patientsResp, encountersResp] = await Promise.all([
-        api.get<FHIR_API_Response<IPatient>>(
-          `/Patient?identifier=${patientIdentifiers.join(
-            ','
-          )}${API_RESOURCE_TAG}`
-        ),
-        api.get<FHIR_API_Response<IEncounter>>(
-          `/Encounter?subject=${patientRefs.join(',')}${API_RESOURCE_TAG}`
-        )
+        api.get<FHIR_API_Response<IPatient>>(`/Patient?identifier=${patientIdentifiers.join(',')}${API_RESOURCE_TAG}`),
+        api.get<FHIR_API_Response<IEncounter>>(`/Encounter?subject=${patientRefs.join(',')}${API_RESOURCE_TAG}`)
       ])
       const patients = getApiResponseResources(patientsResp)
       const encounters = getApiResponseResources(encountersResp)
@@ -154,13 +122,8 @@ const fetchCohort = async (
       cohortResult.encounters = encounters
       cohortResult.genderRepartitionMap = getGenderRepartitionMap(patients)
       cohortResult.agePyramidData = getAgeRepartitionMap(patients)
-      cohortResult.monthlyVisitData = getVisitRepartitionMap(
-        patients,
-        encounters
-      )
-      cohortResult.visitTypeRepartitionData = getEncounterRepartitionMap(
-        encounters
-      )
+      cohortResult.monthlyVisitData = getVisitRepartitionMap(patients, encounters)
+      cohortResult.visitTypeRepartitionData = getEncounterRepartitionMap(encounters)
     }
     return cohortResult
   }
@@ -179,32 +142,20 @@ const fetchPatientList = async (
   | {
       totalPatients: number
       originalPatients: IPatient[]
-      agePyramidData?: ComplexChartDataType<
-        number,
-        { male: number; female: number; other?: number }
-      >
+      agePyramidData?: ComplexChartDataType<number, { male: number; female: number; other?: number }>
       genderRepartitionMap?: ComplexChartDataType<PatientGenderKind>
     }
   | undefined
 > => {
   if (CONTEXT === 'arkhn') {
-    let patients: IPatient[] | undefined = []
-
     //TODO: Improve api request (we filter after getting all the patients)
-    if (undefined !== searchInput && searchInput.trim() !== '') {
-      //FIX: Request is based on all patients instead of perimeters patients
-      patients = await searchPatient(searchInput, searchBy)
-    } else if (groupId) {
-      patients = (await fetchPerimetersInfos(groupId))?.originalPatients
-    }
+    const patients = await searchPatient(searchInput, searchBy, groupId)
 
     if (patients) {
       const filteredPatients: IPatient[] = patients.filter((patient) => {
         const agePatient = parseInt(getAge(patient))
         const genderPatient = patient.gender
-        const vitalStatusPatient = patient.deceasedDateTime
-          ? VitalStatus.deceased
-          : VitalStatus.alive
+        const vitalStatusPatient = patient.deceasedDateTime ? VitalStatus.deceased : VitalStatus.alive
         const [ageMin, ageMax] = age
         let includePatient = true
 
@@ -212,10 +163,7 @@ const fetchPatientList = async (
           includePatient = false
         }
 
-        if (
-          vitalStatus !== VitalStatus.all &&
-          vitalStatusPatient !== vitalStatus
-        ) {
+        if (vitalStatus !== VitalStatus.all && vitalStatusPatient !== vitalStatus) {
           includePatient = false
         }
 
@@ -236,7 +184,7 @@ const fetchPatientList = async (
   }
 
   if (CONTEXT === 'aphp') {
-    let searchByGroup = groupId ? `&_list=${groupId}` : ''
+    const searchByGroup = groupId ? `&_list=${groupId}` : ''
     let search = ''
     let genderFilter = ''
     let ageFilter = ''
@@ -297,28 +245,21 @@ const fetchPatientList = async (
       }${searchByGroup}${search}${genderFilter}${vitalStatusFilter}${ageFilter}`
     )
 
-    const totalPatients =
-      patientsResp.data.resourceType === 'Bundle' ? patientsResp.data.total : 0
+    const totalPatients = patientsResp.data.resourceType === 'Bundle' ? patientsResp.data.total : 0
 
-    const originalPatients = await getLastEncounter(
-      getApiResponseResources(patientsResp)
-    )
+    const originalPatients = await getLastEncounter(getApiResponseResources(patientsResp))
 
     const agePyramidData =
       patientsResp.data.resourceType === 'Bundle'
         ? getAgeRepartitionMapAphp(
-            patientsResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-age-month'
-            )?.[0].extension
+            patientsResp.data.meta?.extension?.filter((facet: any) => facet.url === 'facet-age-month')?.[0].extension
           )
         : undefined
 
     const genderRepartitionMap =
       patientsResp.data.resourceType === 'Bundle'
         ? getGenderRepartitionMapAphp(
-            patientsResp.data.meta?.extension?.filter(
-              (facet: any) => facet.url === 'facet-deceased'
-            )?.[0].extension
+            patientsResp.data.meta?.extension?.filter((facet: any) => facet.url === 'facet-deceased')?.[0].extension
           )
         : undefined
 
@@ -332,47 +273,59 @@ const fetchPatientList = async (
 }
 
 const fetchDocuments = async (
+  deidentifiedBoolean: boolean,
   page: number,
   searchInput: string,
   selectedDocTypes: string[],
   nda: string,
-  groupId?: string
+  startDate?: string,
+  endDate?: string,
+  groupId?: string,
+  encounterIds?: string[]
 ) => {
   if (CONTEXT === 'aphp') {
     const searchByGroup = groupId ? `&_list=${groupId}` : ''
     const search = searchInput ? `&_text=${searchInput}` : ''
-    const docTypesFilter = !selectedDocTypes.includes('all')
-      ? `&type=${selectedDocTypes.join()}`
-      : ''
+    const docTypesFilter = !selectedDocTypes.includes('all') ? `&type=${selectedDocTypes.join()}` : ''
     const ndaFilter = nda ? `&encounter.identifier=${nda}` : ''
+    let dateFilter = ''
+
+    if (startDate || endDate) {
+      if (startDate && endDate) {
+        dateFilter = `&date=ge${startDate},le${endDate}`
+      } else if (startDate) {
+        dateFilter = `&date=ge${startDate}`
+      } else if (endDate) {
+        dateFilter = `&date=le${endDate}`
+      }
+    }
 
     const [docsList, allDocsList] = await Promise.all([
       api.get<FHIR_API_Response<IComposition>>(
-        `/Composition?facet=cloud-medium&size=20&_sort=-date&offset=${
+        `/Composition?size=20&_sort=-date&offset=${
           page ? (page - 1) * 20 : 0
-        }${searchByGroup}${search}${docTypesFilter}${ndaFilter}`
+        }${searchByGroup}${search}${docTypesFilter}${ndaFilter}${dateFilter}`
       ),
       search
         ? api.get<FHIR_API_Response<IComposition>>(
-            `/Composition?facet=cloud-medium&_sort=-date&${searchByGroup}${docTypesFilter}${ndaFilter}`
+            `/Composition?_sort=-date${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&size=0`
           )
         : null
     ])
 
-    const totalDocs =
-      docsList?.data?.resourceType === 'Bundle' ? docsList.data.total : 0
+    const totalDocs = docsList?.data?.resourceType === 'Bundle' ? docsList.data.total : 0
     const totalAllDocs = search
       ? allDocsList?.data?.resourceType === 'Bundle'
         ? allDocsList.data.total
         : 0
       : totalDocs
 
-    const documentsList = await getInfos(getApiResponseResources(docsList))
+    const documentsList = await getInfos(deidentifiedBoolean, getApiResponseResources(docsList))
 
-    const wordcloudData =
-      docsList.data.resourceType === 'Bundle'
-        ? docsList.data.meta?.extension
-        : []
+    // const wordcloudData =
+    //   docsList.data.resourceType === 'Bundle'
+    //     ? docsList.data.meta?.extension
+    //     : []
 
     if (totalDocs === 0) {
       return null
@@ -380,14 +333,25 @@ const fetchDocuments = async (
       return {
         totalDocs,
         totalAllDocs,
-        documentsList,
-        wordcloudData
+        documentsList
+        // wordcloudData
       }
     }
   }
 
   if (CONTEXT === 'arkhn') {
-    //TODO
+    //TODO when cohort fetching have been implemented and pagination requests can be done
+    if (encounterIds) {
+      const ndaFilter = nda ? `&encounter:identifier=${nda}` : ''
+      const docResponse = await api.get<FHIR_API_Response<IDocumentReference>>(
+        `/DocumentReference?encounter=${encounterIds.join(',')}${ndaFilter}&_sort=-date&_count=10000${API_RESOURCE_TAG}`
+      )
+      const documents = getApiResponseResources(docResponse)
+      return {
+        totalDocs: docResponse.data.resourceType === 'Bundle' ? docResponse.data.total : 0,
+        documentsList: documents ?? []
+      }
+    }
   }
 }
 

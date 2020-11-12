@@ -63,24 +63,16 @@ export const buildFhirCohort = async (
       .filter((id) => '' !== id)
 
     // Use demographic and diagnostic criteria
-    const queryDemographic = demographicCriteria.map(
-      demographicCriterionToQuery
-    )
-    const queryDiagnostics = diagnosticsCriteria.map(
-      diagnosticsCriterionToQuery
-    )
+    const queryDemographic = demographicCriteria.map(demographicCriterionToQuery)
+    const queryDiagnostics = diagnosticsCriteria.map(diagnosticsCriterionToQuery)
     const queryResponse = await api.get<FHIR_API_Response<IPatient>>(
-      `/Patient?${[...queryDemographic, ...queryDiagnostics].join(
-        '&'
-      )}&_count=10000`
+      `/Patient?${[...queryDemographic, ...queryDiagnostics].join('&')}&_count=10000`
     )
 
     const queryPatients = getApiResponseResources(queryResponse)
     memberIds = queryPatients
       ? queryPatients
-          .filter((member) =>
-            member.id ? memberIds.includes(member.id) : false
-          )
+          .filter((member) => (member.id ? memberIds.includes(member.id) : false))
           .map((patient) => patient.id ?? '')
           .filter((id) => '' !== id)
       : []
@@ -94,9 +86,7 @@ export const buildFhirCohort = async (
     const randomDate = () => {
       const start = new Date(2012, 0, 1)
       const end = new Date()
-      return new Date(
-        start.getTime() + Math.random() * (end.getTime() - start.getTime())
-      )
+      return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
     }
 
     const members = memberIds.map((memberId) => ({
@@ -118,19 +108,13 @@ export const buildFhirCohort = async (
         reference: `Practitioner/${practitioner.id}`
       },
       characteristic: inclusionCriteria.reduce(
-        (acc: IGroup_Characteristic[], criterion) => [
-          ...acc,
-          ...criterionToCharacteristics(criterion)
-        ],
+        (acc: IGroup_Characteristic[], criterion) => [...acc, ...criterionToCharacteristics(criterion)],
         []
       ),
       ...(members && { member: members })
     }
     // Post group to api
-    const groupResp = await api.post<IOperationOutcome | IGroup>(
-      '/Group',
-      cohort
-    )
+    const groupResp = await api.post<IOperationOutcome | IGroup>('/Group', cohort)
     return groupResp.data
   }
 }
@@ -145,9 +129,7 @@ export const patchCohortMembers = async (params: {
 
   const excludedReferences = excludedPatients.map((p) => `Patient/${p.id}`)
   newMembers = newMembers.filter((member) =>
-    member.entity.reference
-      ? !excludedReferences.includes(member.entity.reference)
-      : false
+    member.entity.reference ? !excludedReferences.includes(member.entity.reference) : false
   )
 
   // For Group resource

@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-import { CONTEXT } from '../constants'
+import { v4 as uuid } from 'uuid'
+import { STATE_STORAGE_KEY } from '../constants'
+import { authClient } from './arkhnAuth/oauth/authClient'
 
 type Authentication = {
   status: number
@@ -10,25 +12,19 @@ type Authentication = {
   }
 }
 
-export const authenticate = async (
-  username: string,
-  password: string
-): Promise<Authentication> => {
-  switch (CONTEXT) {
-    case 'aphp':
-      return axios({
-        method: 'POST',
-        url: '/api/jwt/',
-        data: { username: username, password: password }
-      })
-    case 'arkhn':
-      return Promise.resolve({
-        status: 200,
-        data: {
-          // PLEASE FIX THIS
-          access: '',
-          refresh: ''
-        }
-      })
-  }
+export const authenticate = async (username: string, password: string): Promise<Authentication> => {
+  return axios({
+    method: 'POST',
+    url: '/api/jwt/',
+    data: { username: username, password: password }
+  })
+}
+
+export const arkhnAuthenticationRedirect = () => {
+  const state = uuid()
+  localStorage.setItem(STATE_STORAGE_KEY, state)
+  const uri = authClient.code.getUri({
+    state: state
+  })
+  window.location.assign(uri)
 }

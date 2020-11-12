@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
+import { CircularProgress, Grid, IconButton, InputBase } from '@material-ui/core'
 import Pagination from '@material-ui/lab/Pagination'
-import Grid from '@material-ui/core/Grid'
-import InputBase from '@material-ui/core/InputBase'
-import IconButton from '@material-ui/core/IconButton'
-import CircularProgress from '@material-ui/core/CircularProgress'
 
 import { ReactComponent as SearchIcon } from '../../assets/icones/search.svg'
 
 import ResearchTable from './ResearchTable/ResearchTable'
-
-import useStyles from './styles'
-
 import { fetchCohorts, setFavorite } from '../../services/savedResearches'
 
-const Research = ({ simplified, onClickRow, filteredIds }) => {
+import useStyles from './styles'
+import { FormattedCohort } from 'types'
+
+type ResearchProps = {
+  simplified?: boolean
+  onClickRow?: Function
+  filteredIds?: string[]
+}
+const Research: React.FC<ResearchProps> = ({ simplified, onClickRow, filteredIds }) => {
   const classes = useStyles()
   const [page, setPage] = useState(1)
-  const [researches, setResearches] = useState([])
+  const [researches, setResearches] = useState<FormattedCohort[] | undefined>()
   const [loadingStatus, setLoadingStatus] = useState(true)
   const [total, setTotal] = useState(0)
   const [searchInput, setSearchInput] = useState('')
@@ -27,56 +29,41 @@ const Research = ({ simplified, onClickRow, filteredIds }) => {
 
   useEffect(() => {
     fetchCohorts()
-      .then(({ formattedCohort, total }) => {
+      .then((cohortsResp) => {
         if (filteredIds) {
           setResearches(
-            formattedCohort.filter((r) => !filteredIds.includes(r.researchId))
+            cohortsResp ? cohortsResp?.results?.filter((r) => !filteredIds.includes(r.researchId)) : undefined
           )
         } else {
-          setResearches(formattedCohort)
+          setResearches(cohortsResp?.results ?? undefined)
         }
-        setTotal(total)
+        setTotal(cohortsResp?.count ?? 0)
       })
       .then(() => {
         setLoadingStatus(false)
       })
   }, []) // eslint-disable-line
 
-  const onDeleteCohort = async (cohortId) => {
-    setResearches(researches.filter((r) => r.researchId !== cohortId))
+  const onDeleteCohort = async (cohortId: string) => {
+    setResearches(researches?.filter((r) => r.researchId !== cohortId))
   }
 
-  const onSetCohortFavorite = async (cohortId, favStatus) => {
+  const onSetCohortFavorite = async (cohortId: string, favStatus: boolean) => {
     setFavorite(cohortId, favStatus)
       .then(() => fetchCohorts())
-      .then(({ formattedCohort, total }) => {
-        setResearches(formattedCohort)
-        setTotal(total)
+      .then((cohortsResp) => {
+        setResearches(cohortsResp?.results ?? undefined)
+        setTotal(cohortsResp?.count ?? 0)
       })
   }
 
-  const handleChangeInput = (event) => {
-    setSearchInput(event.target.value)
-  }
-
-  const onSearchCohort = async () => {
-    handleChangePage(1)
-  }
-
-  const onKeyDown = async (e) => {
-    if (e.keyCode === 13) {
-      e.preventDefault()
-      onSearchCohort()
-    }
-  }
-
-  const handleChangePage = (event, value) => {
-    setPage(value || 1)
+  const handleChangePage = (event?: React.ChangeEvent<unknown>, value = 1) => {
+    setPage(value)
     setLoadingStatus(true)
     fetchCohorts(searchInput, value || 1)
-      .then(({ formattedCohort, total }) => {
-        setResearches(formattedCohort)
-        setTotal(total)
+      .then((cohortsResp) => {
+        setResearches(cohortsResp?.results ?? undefined)
+        setTotal(cohortsResp?.count ?? 0)
       })
       .catch((error) => console.log(error))
       .then(() => {
@@ -84,16 +71,25 @@ const Research = ({ simplified, onClickRow, filteredIds }) => {
       })
   }
 
+  const handleChangeInput = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    setSearchInput(event.target.value)
+  }
+
+  const onSearchCohort = async () => {
+    handleChangePage()
+  }
+
+  const onKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    if (e.keyCode === 13) {
+      e.preventDefault()
+      onSearchCohort()
+    }
+  }
+
   return (
     <Grid container justify="flex-end" className={classes.documentTable}>
       <div className={classes.tableButtons}>
-        <Grid
-          item
-          container
-          xs={10}
-          alignItems="center"
-          className={classes.searchBar}
-        >
+        <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
           <InputBase
             placeholder="Rechercher"
             className={classes.input}
@@ -101,11 +97,7 @@ const Research = ({ simplified, onClickRow, filteredIds }) => {
             onChange={handleChangeInput}
             onKeyDown={onKeyDown}
           />
-          <IconButton
-            type="submit"
-            aria-label="search"
-            onClick={onSearchCohort}
-          >
+          <IconButton type="submit" aria-label="search" onClick={onSearchCohort}>
             <SearchIcon fill="#ED6D91" height="15px" />
           </IconButton>
         </Grid>
@@ -117,7 +109,6 @@ const Research = ({ simplified, onClickRow, filteredIds }) => {
       ) : (
         <ResearchTable
           simplified={simplified}
-          researchLines={researchLines}
           researchData={researches}
           onDeleteCohort={onDeleteCohort}
           onSetCohortFavorite={onSetCohortFavorite}

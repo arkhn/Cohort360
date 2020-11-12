@@ -6,7 +6,7 @@ export const getOptimalTicksCount = (maxTick) => {
 
   //base step between nearby two ticks
 
-  var step = Math.pow(10, maxTick.toString().length - 1)
+  let step = Math.pow(10, maxTick.toString().length - 1)
 
   //modify steps either: 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000...
   if (maxTick / step < 2) {
@@ -18,7 +18,7 @@ export const getOptimalTicksCount = (maxTick) => {
 
   //add one more step if the last tick value is the same as the max value
   //if you don't want to add, remove "+1"
-  var slicesCount = Math.ceil((maxTick + 1) / step)
+  const slicesCount = Math.ceil((maxTick + 1) / step)
 
   return {
     endPoint: slicesCount * step,

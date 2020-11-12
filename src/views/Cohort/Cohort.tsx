@@ -27,9 +27,7 @@ const Cohort: React.FC<{}> = () => {
 
   const [selectedTab, selectTab] = useState(tabName || 'apercu')
   const [loading, setLoading] = useState(true)
-  const [deidentifiedBoolean, setDeidentifiedBoolean] = useState<
-    boolean | undefined
-  >(true)
+  const [deidentifiedBoolean, setDeidentifiedBoolean] = useState<boolean>(true)
   const [openRedcapDialog, setOpenRedcapDialog] = useState(false)
   const handleOpenRedcapDialog = () => {
     setOpenRedcapDialog(true)
@@ -51,9 +49,8 @@ const Cohort: React.FC<{}> = () => {
           dispatch(setExploredCohort(cohortResp))
           if (cohortResp.originalPatients?.[0]) {
             setDeidentifiedBoolean(
-              cohortResp.originalPatients?.[0].extension?.filter(
-                (data) => data.url === 'deidentified'
-              )?.[0].valueBoolean
+              cohortResp.originalPatients?.[0].extension?.filter((data) => data.url === 'deidentified')?.[0]
+                .valueBoolean ?? true
             )
           }
         }
@@ -72,8 +69,7 @@ const Cohort: React.FC<{}> = () => {
   if (!cohort.cohort) {
     return (
       <Alert severity="error" className={classes.alert}>
-        Les données ne sont pas encore disponibles, veuillez réessayer
-        ultérieurement.
+        Les données ne sont pas encore disponibles, veuillez réessayer ultérieurement.
       </Alert>
     )
   }
@@ -109,11 +105,7 @@ const Cohort: React.FC<{}> = () => {
       />
       <Grid container justify="center" className={classes.tabs}>
         <Grid container item xs={11}>
-          <Tabs
-            value={selectedTab}
-            onChange={handleChangeTabs}
-            classes={{ indicator: classes.indicator }}
-          >
+          <Tabs value={selectedTab} onChange={handleChangeTabs} classes={{ indicator: classes.indicator }}>
             <Tab
               classes={{ selected: classes.selected }}
               className={classes.tabTitle}
@@ -175,7 +167,7 @@ const Cohort: React.FC<{}> = () => {
               />
             )} */}
             {selectedTab === 'documents' && (
-              <CohortDocuments groupId={cohortId} />
+              <CohortDocuments groupId={cohortId} deidentifiedBoolean={deidentifiedBoolean} />
             )}
             {/* {CONTEXT === 'arkhn' && selectedTab === 'inclusion-exclusion' && (
               <InclusionExclusionPatientsPanel cohort={cohort} />

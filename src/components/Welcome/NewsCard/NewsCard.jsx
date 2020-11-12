@@ -10,9 +10,7 @@ export default function TutorialsCard() {
     <>
       <Title>Actualités</Title>
       <Divider className={classes.divider} />
-      <Typography color="textSecondary">
-        Nouvelle fonctionnalité à venir !
-      </Typography>
+      <Typography color="textSecondary">Nouvelle fonctionnalité à venir !</Typography>
     </>
   )
 }

@@ -30,9 +30,7 @@ type RepartitionTableProps = {
   genderRepartitionMap?: ComplexChartDataType<PatientGenderKind>
 }
 
-const RepartitionTable: React.FC<RepartitionTableProps> = ({
-  genderRepartitionMap
-}) => {
+const RepartitionTable: React.FC<RepartitionTableProps> = ({ genderRepartitionMap }) => {
   const classes = useStyles()
   let femaleAlive, maleAlive, femaleDeceased, maleDeceased
   if (genderRepartitionMap) {
@@ -91,10 +89,7 @@ type PreviewProps = {
   genderRepartitionMap?: ComplexChartDataType<PatientGenderKind>
   visitTypeRepartitionData?: SimpleChartDataType[]
   monthlyVisitData?: ComplexChartDataType<Month>
-  agePyramidData?: ComplexChartDataType<
-    number,
-    { male: number; female: number; other?: number }
-  >
+  agePyramidData?: ComplexChartDataType<number, { male: number; female: number; other?: number }>
 }
 const Preview: React.FC<PreviewProps> = ({
   total,
@@ -107,9 +102,7 @@ const Preview: React.FC<PreviewProps> = ({
 }) => {
   const classes = useStyles()
   const title = group.name
-  const { vitalStatusData, genderData } = getGenderRepartitionSimpleData(
-    genderRepartitionMap
-  )
+  const { vitalStatusData, genderData } = getGenderRepartitionSimpleData(genderRepartitionMap)
 
   return loading ? (
     <CircularProgress className={classes.loadingSpinner} size={50} />

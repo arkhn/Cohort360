@@ -1,56 +1,46 @@
 import React, { useState, useEffect } from 'react'
-import Title from '../../Title'
-import { Grid, Link } from '@material-ui/core'
-import useStyles from './styles'
 
+import { Grid, Link } from '@material-ui/core'
+
+import Title from '../../Title'
 import ResearchTable from '../../SavedResearch/ResearchTable/ResearchTable'
+
 import { setFavorite } from '../../../services/savedResearches'
+import { Back_API_Response, FormattedCohort } from 'types'
+
+import useStyles from './styles'
 
 type ResearchCardProps = {
   simplified?: boolean
   onClickRow?: (props: any) => void
   title?: string
-  fetchCohort: () => Promise<
-    | {
-        formattedCohort: any
-      }
-    | undefined
-  >
+  fetchCohort: () => Promise<Back_API_Response<FormattedCohort> | undefined>
 }
 
-const ResearchCard: React.FC<ResearchCardProps> = ({
-  onClickRow,
-  simplified,
-  title,
-  fetchCohort
-}) => {
+const ResearchCard: React.FC<ResearchCardProps> = ({ onClickRow, simplified, title, fetchCohort }) => {
   const classes = useStyles()
-  const [researches, setResearches] = useState<{ researchId: string }[]>([])
-
-  const page = 1
-  const researchLines = 5 // Number of desired lines in the document array
+  const [researches, setResearches] = useState<FormattedCohort[] | undefined>()
 
   const onDeleteCohort = async (cohortId: string) => {
-    setResearches(researches.filter((r) => r.researchId !== cohortId))
+    setResearches(researches?.filter((r) => r.researchId !== cohortId))
   }
 
   const onSetCohortFavorite = async (cohortId: string, favStatus: boolean) => {
     setFavorite(cohortId, favStatus)
       .then(() => fetchCohort())
-      .then((result) => {
-        if (result) {
-          setResearches(result.formattedCohort)
+      .then((cohortsResp) => {
+        if (cohortsResp) {
+          setResearches(cohortsResp.results)
         }
       })
   }
 
   useEffect(() => {
-    fetchCohort()
-      .then((result) => {
-        if (result) {
-          setResearches(result.formattedCohort)
-        }
-      })
+    fetchCohort().then((cohortsResp) => {
+      if (cohortsResp) {
+        setResearches(cohortsResp.results)
+      }
+    })
   }, []) // eslint-disable-line
 
   return (
@@ -60,11 +50,7 @@ const ResearchCard: React.FC<ResearchCardProps> = ({
           <Title>{title}</Title>
         </Grid>
         <Grid item container xs={3} justify="flex-end">
-          <Link
-            underline="always"
-            className={classes.link}
-            href="/recherche_sauvegarde"
-          >
+          <Link underline="always" className={classes.link} href="/recherche_sauvegarde">
             Voir toutes mes cohortes
           </Link>
         </Grid>
@@ -72,12 +58,10 @@ const ResearchCard: React.FC<ResearchCardProps> = ({
       <Grid item xs={12} className={classes.tableContainer}>
         <ResearchTable
           simplified={simplified}
-          researchLines={researchLines}
           researchData={researches}
           onDeleteCohort={onDeleteCohort}
           onSetCohortFavorite={onSetCohortFavorite}
           onClickRow={onClickRow}
-          page={page}
         />
       </Grid>
     </>

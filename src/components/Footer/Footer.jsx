@@ -10,7 +10,7 @@ const Footer = (props) => {
 
   return (
     <Grid container justify="center">
-      <Link href='https://eds.aphp.fr'>
+      <Link href="https://eds.aphp.fr">
         <img className={classes.logoAPHP} src={logoAPHP} alt="Footer" />
       </Link>
     </Grid>

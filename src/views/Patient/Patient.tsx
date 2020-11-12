@@ -3,16 +3,10 @@ import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAppSelector } from 'state'
 
-import {
-  IconButton,
-  Grid,
-  Tabs,
-  Tab,
-  CircularProgress
-} from '@material-ui/core'
+import { IconButton, Grid, Tabs, Tab, CircularProgress } from '@material-ui/core'
 import { Alert } from '@material-ui/lab'
 
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 
 import PatientDocs from '../../components/Patient/PatientDocs/PatientDocs'
 import PatientHeader from '../../components/Patient/PatientHeader/PatientHeader'
@@ -39,7 +33,10 @@ import useStyles from './styles'
 
 const Patient = () => {
   const classes = useStyles()
-  const { patientId, tabName } = useParams<{patientId: string, tabName: string}>()
+  const { patientId, tabName } = useParams<{
+    patientId: string
+    tabName: string
+  }>()
 
   const [patient, setPatient] = useState<CohortPatient | undefined>(undefined)
   const [loading, setLoading] = useState(true)
@@ -52,9 +49,7 @@ const Patient = () => {
   const [diagnosticTotal, setDiagnosticTotal] = useState(0)
   const [ghm, setGhm] = useState<PMSIEntry<IClaim>[] | undefined>(undefined)
   const [ghmTotal, setGhmTotal] = useState(0)
-  const [documents, setDocuments] = useState<
-    (IComposition | IDocumentReference)[] | undefined
-  >(undefined)
+  const [documents, setDocuments] = useState<(IComposition | IDocumentReference)[] | undefined>(undefined)
   const [documentsTotal, setDocumentsTotal] = useState(0)
   const [deidentifiedBoolean, setDeidentifiedBoolean] = useState(true)
 
@@ -80,17 +75,12 @@ const Patient = () => {
         setGhm(patientResp?.ghm)
         setGhmTotal(patientResp?.ghmTotal ?? 0)
         setPatient(patientResp?.patient)
-        setDeidentifiedBoolean(
-          patientResp?.patient?.extension?.[0].valueBoolean ?? false
-        )
+        setDeidentifiedBoolean(patientResp?.patient?.extension?.[0].valueBoolean ?? true)
       })
       .then(() => setLoading(false))
   }, [patientId])
 
-  const title =
-    Array.isArray(cohort.cohort) || cohort?.cohort?.name === '-'
-      ? '-'
-      : cohort?.cohort?.name
+  const title = Array.isArray(cohort.cohort) || cohort?.cohort?.name === '-' ? '-' : cohort?.cohort?.name
 
   const status = Array.isArray(cohort.cohort)
     ? 'Visualisation de périmètres'
@@ -103,8 +93,7 @@ const Patient = () => {
   if (!patient && !loading) {
     return (
       <Alert severity="error" className={classes.alert}>
-        Les données de ce patient ne sont pas disponibles, veuillez réessayer
-        ultérieurement.
+        Les données de ce patient ne sont pas disponibles, veuillez réessayer ultérieurement.
       </Alert>
     )
   }
@@ -134,12 +123,11 @@ const Patient = () => {
         className={clsx(isSidebarOpened ? classes.contentShift : null)}
       >
         {!isSidebarOpened && (
-          <IconButton
-            className={classes.sidebarButton}
-            onClick={() => setSidebarOpened(true)}
-          >
-            <MenuOpenIcon fontSize="large" />
-          </IconButton>
+          <div className={classes.openLeftBar}>
+            <IconButton onClick={() => setSidebarOpened(true)}>
+              <ChevronLeftIcon color="action" width="20px" />
+            </IconButton>
+          </div>
         )}
         <PatientHeader patient={patient} deidentified={deidentifiedBoolean} />
         <Grid container item md={11}>
@@ -175,27 +163,17 @@ const Patient = () => {
           </Tabs>
         </Grid>
         <Grid className={classes.tabContainer}>
-          {selectedTab === 'apercu' &&
-            <PatientPreview
-              patient={patient}
-              deidentified={deidentifiedBoolean}
-            />
-          }
-          {selectedTab === 'parcours' &&
-            <PatientTimeline
-              documents={documents}
-              hospits={hospit}
-              consults={consult}
-            />
-          }
-          {selectedTab === 'documents-cliniques' &&
+          {selectedTab === 'apercu' && <PatientPreview patient={patient} deidentified={deidentifiedBoolean} />}
+          {selectedTab === 'parcours' && <PatientTimeline documents={documents} hospits={hospit} consults={consult} />}
+          {selectedTab === 'documents-cliniques' && (
             <PatientDocs
               patientId={patientId}
               documents={documents}
               total={documentsTotal}
+              deidentifiedBoolean={deidentifiedBoolean}
             />
-          }
-          {selectedTab === 'pmsi' &&
+          )}
+          {selectedTab === 'pmsi' && (
             <PatientPMSI
               patientId={patientId}
               diagnostic={diagnostic}
@@ -204,27 +182,25 @@ const Patient = () => {
               ccamTotal={consultTotal}
               ghm={ghm}
               ghmTotal={ghmTotal}
+              deidentifiedBoolean={deidentifiedBoolean}
             />
-          }
+          )}
         </Grid>
         <PatientSidebar
           openDrawer={isSidebarOpened}
-          groupId={
-            Array.isArray(cohort.cohort)
-              ? cohort.cohort.map((e) => e.id).join()
-              : cohort.cohort?.id
-          }
+          groupId={Array.isArray(cohort.cohort) ? cohort.cohort.map((e) => e.id).join() : cohort.cohort?.id}
           patients={cohort.originalPatients}
           total={cohort.totalPatients ?? 0}
           onClose={() => setSidebarOpened(false)}
+          deidentifiedBoolean={deidentifiedBoolean}
         />
       </Grid>
     </Grid>
   ) : (
-      <div>
-        <CircularProgress className={classes.loading} size={50} />
-      </div>
-    )
+    <div>
+      <CircularProgress className={classes.loading} size={50} />
+    </div>
+  )
 }
 
 export default Patient

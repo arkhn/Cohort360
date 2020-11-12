@@ -7,7 +7,5 @@ export function getApiResponseResources<T extends IResourceList>(
 ): T[] | undefined {
   if (!response || !(response && response.data) || response.data.resourceType === 'OperationOutcome') return undefined
 
-  return response.data.entry ? (
-    response.data.entry.map((r) => r.resource).filter((r): r is T => undefined !== r)
-  ) : []
+  return response.data.entry ? response.data.entry.map((r) => r.resource).filter((r): r is T => undefined !== r) : []
 }

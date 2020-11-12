@@ -12,12 +12,9 @@ import useStyles from './styles'
  */
 type TimelineItemRightTypes = {
   data: IProcedure
-  open: () => void
+  open: (procedure?: IProcedure) => void
 }
-const TimelineItemRight: React.FC<TimelineItemRightTypes> = ({
-  data,
-  open
-}) => {
+const TimelineItemRight: React.FC<TimelineItemRightTypes> = ({ data, open }) => {
   let color = 'red'
   switch (data.status) {
     case 'preparation':
@@ -55,11 +52,9 @@ const TimelineItemRight: React.FC<TimelineItemRightTypes> = ({
               ? new Date(data.meta.lastUpdated).toLocaleDateString('fr-FR')
               : 'Date inconnue'}
           </span>
-          {data.status && (
-            <Chip label={data.status} size="small" className={classes.chip} />
-          )}
+          {data.status && <Chip label={data.status} size="small" className={classes.chip} />}
           {data.code && (
-            <div className={classes.timelineTextRight} onClick={open}>
+            <div className={classes.timelineTextRight} onClick={() => open(data)}>
               {`${data.code?.coding?.[0].display} (${data.code?.coding?.[0].code})`}
             </div>
           )}

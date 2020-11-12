@@ -5,7 +5,7 @@ import { Chip, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 
 import { ReactComponent as FemaleIcon } from '../../../../assets/icones/venus.svg'
 import { ReactComponent as MaleIcon } from '../../../../assets/icones/mars.svg'
-import UnknownIcon from '@material-ui/icons/HelpOutline'
+import { ReactComponent as UnknownIcon } from '../../../../assets/icones/autre-inconnu.svg'
 
 import { PatientGenderKind } from '@ahryman40k/ts-fhir-types/lib/R4'
 
@@ -14,7 +14,7 @@ import useStyles from './styles'
 type GenderIconTypes = {
   gender?: PatientGenderKind
 }
-const GenderIcon: React.FC<GenderIconTypes> = (gender) => {
+const GenderIcon: React.FC<GenderIconTypes> = ({ gender }) => {
   const classes = useStyles()
 
   switch (gender) {
@@ -28,9 +28,9 @@ const GenderIcon: React.FC<GenderIconTypes> = (gender) => {
 }
 
 type VitalStatusChipTypes = {
-  deceased?: string
+  deceased?: string | boolean
 }
-const VitalStatusChip: React.FC<VitalStatusChipTypes> = (deceased) => {
+const VitalStatusChip: React.FC<VitalStatusChipTypes> = ({ deceased }) => {
   const classes = useStyles()
 
   if (deceased) {
@@ -46,7 +46,8 @@ type PatientSidebarItemTypes = {
   lastName?: string
   age?: string | number
   id?: string
-  deceased?: string
+  ipp?: string
+  deceased?: string | boolean
 }
 const PatientSidebarItem: React.FC<PatientSidebarItemTypes> = ({
   gender,
@@ -54,24 +55,17 @@ const PatientSidebarItem: React.FC<PatientSidebarItemTypes> = ({
   lastName,
   age,
   id,
+  ipp,
   deceased
 }) => {
   const classes = useStyles()
   const history = useHistory()
-
   return (
-    <ListItem
-      divider
-      onClick={() => history.push(`/patients/${id}`)}
-      className={classes.listItem}
-    >
+    <ListItem divider onClick={() => history.push(`/patients/${id}`)} className={classes.listItem}>
       <ListItemIcon className={classes.genderIconContainer}>
         <GenderIcon gender={gender} />
       </ListItemIcon>
-      <ListItemText
-        primary={`${firstName} ${lastName}`}
-        secondary={`${age} - ${id}`}
-      />
+      <ListItemText primary={`${firstName} ${lastName}`} secondary={`${age} - ${ipp}`} />
       <VitalStatusChip deceased={deceased} />
     </ListItem>
   )

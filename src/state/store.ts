@@ -32,9 +32,7 @@ export const logout = () => {
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
-const createStoreWithMiddlewares = applyMiddleware(createLogger({}))(
-  createStore
-)
+const createStoreWithMiddlewares = applyMiddleware(createLogger({}))(createStore)
 
 export const store = createStoreWithMiddlewares(persistedReducer)
 
