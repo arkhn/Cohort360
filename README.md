@@ -7,7 +7,7 @@
 
 Cohort360 is a web application for knowledge discovery in clinical data warehouses. It provides tools for clinicians and researchers to find patients, build cohorts and visualize data. Cohort360 has been initiated by Greater Paris University Hospital (AP-HP) and it is now an open-source project being developed collaboratively by a community of contributors and partners, working together to unleash research on clinical data.
 
-## Architecture 
+## Architecture
 
 Cohort360 consists of a React front-end and a Django back-end (REST API).
 
@@ -20,11 +20,11 @@ This third endpoint can be a FHIR API for example. This is the case for the firs
 
 ### Requirements:
 
-* A running back-end server
-* A running third party endpoint (FHIR API for example)
-* An authentication server
+- A running back-end server
+- A running third party endpoint (FHIR API for example)
+- An authentication server
 
-* Node.js installed (tested with version>=14)
+- Node.js installed (tested with version>=14)
 
 ### Running the front-end
 
@@ -35,7 +35,7 @@ This third endpoint can be a FHIR API for example. This is the case for the firs
 
 This will generate files in the `build` directory that can be exposed via a web server like Nginx, or a node server.
 
-An example configuration with Nginx would be: 
+An example configuration with Nginx would be:
 
 ```nginx
 server {
@@ -75,21 +75,53 @@ server {
 }
 ```
 
-
-
 ## Start Contributing
 
 A contributing guide will be published soon.
 
 ## Partners
 
-* AP-HP Clinical Data Warehouse
-* Arkhn : arkhn.org
-* Akimed : akimed.io
+- AP-HP Clinical Data Warehouse
+- Arkhn : arkhn.org
+- Akimed : akimed.io
 
 ## Contributors
 
 Coming soon...
 
 ## License
+
 Cohort360 is licensed under Apache License 2.
+
+## Release
+
+Each push (commits and/or tags) will publish a single image to the DockerHub registry.
+
+Each image will have one or more docker tags, depending on the context:
+
+- on every branch (including `master`), images have following tags:
+  - the first 8 chars of the targetted commit hash,
+  - the branch name, with `/` replaced by `-`. For instance the branch `jd/fix/1` will have the `jd-fix-1` tag on DockerHub.
+- on `master`, images have **additional** tags:
+  - the version, only if the push is a tag (i.e. `git push --tags <version>`),
+  - the `latest` tag, for the most recent pushed tag.
+
+## Versioning of `cohort-front`
+
+The app must follow a [**semantic versioning**](https://semver.org/).
+
+## Publishing a new release of `cohort-front`
+
+### 1. Tag the target commit (on `master`)
+
+        git tags vX.Y.Z [<commit-sha>]
+
+### 2. Push the tag
+
+        git push --tags vX.Y.Z
+
+Providing that the CI workflow is successful (which should always be the case on `master`...), a new image will soon be available on DockerHub with the specified tag.
+
+### 3. Pull the tagged image
+
+        docker pull arkhn/cohort-front:vX.Y.Z
