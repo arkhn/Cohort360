@@ -3,11 +3,14 @@ import { FHIR_API_URL, PRACTITIONER_ID, FHIR_API_ADMIN_TOKEN } from '../constant
 import { removeTokens } from './arkhnAuth/oauth/tokenManager'
 
 const api = axios.create({
-  baseURL: FHIR_API_URL
+  baseURL: FHIR_API_URL,
+  headers: {
+    Accept: 'application/fhir+json'
+  }
 })
 
 api.interceptors.request.use((config) => {
-  config.headers.Authorization = localStorage.getItem(PRACTITIONER_ID) || `Bearer ${FHIR_API_ADMIN_TOKEN}`
+  config.headers.Authorization = localStorage.getItem(PRACTITIONER_ID) || FHIR_API_ADMIN_TOKEN
   return config
 })
 
