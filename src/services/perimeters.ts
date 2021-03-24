@@ -1,4 +1,4 @@
-import { IOrganization, IEncounter, IPatient, IGroup } from '@ahryman40k/ts-fhir-types/lib/R4'
+import { IOrganization, IEncounter, IPatient, IGroup, IPractitionerRole } from '@ahryman40k/ts-fhir-types/lib/R4'
 
 import api from './api'
 import {
@@ -22,11 +22,24 @@ import fakeFacetClassSimple from '../data/fakeData/facet-class-simple'
 import fakeFacetStartDateFacet from '../data/fakeData/facet-start-date-facet'
 import fakePatients from '../data/fakeData/patients'
 import { FHIR_API_Response, CohortData, ScopeTreeRow } from 'types'
+import { getServicePatientsCount } from './scopeService'
 
 export const getOrganizations = async (ids?: string[]): Promise<IOrganization[]> => {
   const orgaIdsParam = ids ? `?_id=${ids.join(',')}` : ''
   const respOrganizations = await api.get<FHIR_API_Response<IOrganization>>(`/Organization${orgaIdsParam}`)
   return getApiResponseResources(respOrganizations) ?? []
+}
+
+export const getPractitionerPerimeters = async (practitionerId: string) => {
+  const resp = await api.get<FHIR_API_Response<IOrganization | IPractitionerRole>>(
+    `/PractitionerRole?permission-status=active&practitioner=${practitionerId}&date=lt${new Date().toISOString()}&_include=PractitionerRole:organization`
+  )
+  const organizations =
+    (getApiResponseResources(resp)?.filter(({ resourceType }) => resourceType === 'Organization') as IOrganization[]) ??
+    []
+  const organizationsWithTotal = await Promise.all(organizations.map(getServicePatientsCount))
+
+  return organizationsWithTotal.map(({ service, patientCount }) => ({ ...service, patientCount }))
 }
 
 const getPatientsAndEncountersFromServiceId = async (serviceId: string) => {

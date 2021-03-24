@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { ACCES_TOKEN, FHIR_API_URL, TOKEN_URL } from '../constants'
-import { refreshToken, removeTokens } from './arkhnAuth/oauth/tokenManager'
+import { FHIR_API_URL, PRACTITIONER_ID, FHIR_API_ADMIN_TOKEN } from '../constants'
+import { removeTokens } from './arkhnAuth/oauth/tokenManager'
 
 const api = axios.create({
   baseURL: FHIR_API_URL,
@@ -10,8 +10,7 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(ACCES_TOKEN)
-  config.headers.Authorization = `Bearer ${token}`
+  config.headers.Authorization = localStorage.getItem(PRACTITIONER_ID) || FHIR_API_ADMIN_TOKEN
   return config
 })
 
@@ -25,13 +24,12 @@ api.interceptors.response.use(
       window.location = '/'
     }
 
-    const originalRequest = error.config
-
-    if (error.response.status === 401 && originalRequest.url.startsWith(TOKEN_URL)) {
+    if (error.response.status === 401) {
       removeTokens()
       return Promise.reject(error)
     }
 
+    /* TODO: Put back oath refresh token
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
@@ -42,6 +40,8 @@ api.interceptors.response.use(
       }
       return axios(originalRequest)
     }
+    */
+
     return Promise.reject(error)
   }
 )
