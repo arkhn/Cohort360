@@ -1,4 +1,4 @@
-import { head } from 'lodash'
+import { head, last } from 'lodash'
 
 import api from './api'
 import apiBackCohort from './apiBackCohort'
@@ -222,19 +222,12 @@ const fetchPatientList = async (
   }
   if (CONTEXT === 'arkhn') {
     //TODO: Improve api request (we filter after getting all the patients)
-    const nominativeGroupsIds: any[] = []
+    const response = await api.get<FHIR_API_Response<IPatient>>(`/Patient?_has:Group:member:_id=${groupId}`)
+    const patients = getApiResponseResources(response)
 
-    const patientsResp = await searchPatient(
-      nominativeGroupsIds,
-      page,
-      sortBy,
-      sortDirection,
-      searchInput,
-      searchBy,
-      groupId
-    )
+    if (patients) {
+      const patientsResp = { patientList: patients, totalPatients: patients?.length }
 
-    if (patientsResp) {
       const filteredPatients: IPatient[] = patientsResp.patientList.filter((patient) => {
         const agePatient = parseInt(getAge(patient))
         const genderPatient = patient.gender
