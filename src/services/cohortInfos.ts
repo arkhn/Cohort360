@@ -37,7 +37,6 @@ import {
   getVisitRepartitionMapAphp,
   getPerimeterRepartitionData
 } from 'utils/graphUtils'
-import { searchPatient } from './searchPatient'
 import { getAge } from 'utils/age'
 import moment from 'moment'
 
