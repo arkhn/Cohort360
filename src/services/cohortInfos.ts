@@ -183,6 +183,8 @@ const fetchCohort = async (cohortId: string | undefined): Promise<CohortData | u
   }
 }
 
+const PATIENT_MAX_COUNT = 500
+
 const fetchPatientList = async (
   page: number,
   searchBy: SearchByTypes,
@@ -221,7 +223,7 @@ const fetchPatientList = async (
   }
   if (CONTEXT === 'arkhn') {
     //TODO: Improve api request (we filter after getting all the patients)
-    const response = await api.get<FHIR_API_Response<IPatient>>(`/Patient?_has:Group:member:_id=${groupId}`)
+    const response = await api.get<FHIR_API_Response<IPatient>>(`/Patient?_has:Group:member:_id=${groupId}&_count=${PATIENT_MAX_COUNT}`)
     const patients = getApiResponseResources(response)
 
     if (patients) {
