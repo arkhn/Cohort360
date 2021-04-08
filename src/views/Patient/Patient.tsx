@@ -23,6 +23,7 @@ import { IClaim, ICondition, IEncounter, IProcedure, IDocumentReference } from '
 
 import clsx from 'clsx'
 import useStyles from './styles'
+import PatientLaboTable from 'components/Patient/PatientLaboTable/PatientLaboTable'
 
 const Patient = () => {
   const classes = useStyles()
@@ -156,6 +157,13 @@ const Patient = () => {
               component={Link}
               to={`/patients/${patientId}/pmsi${groupId ? `?groupId=${groupId}` : ''}`}
             />
+            <Tab
+              className={classes.tabTitle}
+              label="Biologie"
+              value="biology"
+              component={Link}
+              to={`/patients/${patientId}/biology${groupId ? `?groupId=${groupId}` : ''}`}
+            />
           </Tabs>
         </Grid>
         <Grid className={classes.tabContainer}>
@@ -189,6 +197,7 @@ const Patient = () => {
               sortDirection={'desc'}
             />
           )}
+          {selectedTab === 'biology' && <PatientLaboTable patient={patient} />}
         </Grid>
         <PatientSidebar
           openDrawer={isSidebarOpened}
