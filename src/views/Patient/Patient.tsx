@@ -15,6 +15,7 @@ import PatientPMSI from '../../components/Patient/PatientPMSI/PatientPMSI'
 import PatientSidebar from '../../components/Patient/PatientSidebar/PatientSidebar'
 import PatientTimeline from '../../components/Patient/PatientTimeline/PatientTimeline'
 import TopBar from '../../components/TopBar/TopBar'
+import PatientLaboTable from 'components/Patient/PatientLaboTable/PatientLaboTable'
 
 import { fetchPatient } from '../../services/patient'
 
@@ -23,7 +24,6 @@ import { IClaim, ICondition, IEncounter, IProcedure, IDocumentReference } from '
 
 import clsx from 'clsx'
 import useStyles from './styles'
-import PatientLaboTable from 'components/Patient/PatientLaboTable/PatientLaboTable'
 
 const Patient = () => {
   const classes = useStyles()

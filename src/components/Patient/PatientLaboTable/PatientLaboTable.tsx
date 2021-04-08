@@ -47,7 +47,9 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
 
   return (
     <Grid container item xs={11} justify="flex-end" className={classes.labTable}>
-      {/* <div className={classes.labButtons}>
+      {
+        // Filtering feature is hidden
+        /* <div className={classes.labButtons}>
         <Grid item container xs={10} alignItems="center" className={classes.searchBar}>
           <InputBase placeholder="Rechercher" className={classes.input} disabled />
           <IconButton type="submit" aria-label="search" disabled>
@@ -63,7 +65,8 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
         >
           Filtrer
         </Button>
-      </div> */}
+      </div> */
+      }
       <TableContainer component={Paper}>
         <Table className={classes.table} aria-label="simple table">
           <TableHead className={classes.tableHead}>
