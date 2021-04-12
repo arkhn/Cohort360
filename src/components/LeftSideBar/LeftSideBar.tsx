@@ -255,7 +255,11 @@ const LeftSideBar: React.FC<LeftSideBarProps> = (props) => {
             </Collapse>
           </List>
           <div className={classes.drawerFooter}>
-            {open ? <img width={ARKHN_LOGO_WIDTH} src={arkhnLogo} /> : <img width={ICON_WIDTH} src={arkhnLogoSmall} />}
+            {open ? (
+              <img alt="arkhn_logo" width={ARKHN_LOGO_WIDTH} src={arkhnLogo} />
+            ) : (
+              <img alt="arkn_logo" width={ICON_WIDTH} src={arkhnLogoSmall} />
+            )}
           </div>
         </Drawer>
       </div>
