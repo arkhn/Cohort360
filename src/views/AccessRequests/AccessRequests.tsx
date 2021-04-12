@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import clsx from 'clsx'
 
-import { Container, Divider, Grid, Paper, Typography } from '@material-ui/core'
+import { Container, Divider, Grid, Paper, Typography, Snackbar } from '@material-ui/core'
+import { Alert } from '@material-ui/lab'
 
 import RequestItem from 'features/access/RequestItem'
 import useStyles from './styles'
@@ -11,11 +12,22 @@ import { accessRequestsSelector } from 'features/access/RequestSelector'
 
 const AccessRequests = () => {
   const classes = useStyles()
+  const [snackbarState, setSnackbarState] = useState<{ error?: boolean; message?: string }>({})
   const dispatch = useAppDispatch()
   const { open, requests } = useAppSelector((state) => ({
     open: state.drawer,
     requests: accessRequestsSelector(state)
   }))
+
+  const handleCloseSnackbar = () => {
+    setSnackbarState({})
+  }
+  const handleRequestSuccess = (isRejected?: boolean) => {
+    setSnackbarState({
+      error: isRejected,
+      message: isRejected ? `Demande d'accès refusée` : `Demande d'accès acceptée`
+    })
+  }
 
   useEffect(() => {
     dispatch(fetchAccessRequests())
@@ -27,6 +39,16 @@ const AccessRequests = () => {
         [classes.appBarShift]: open
       })}
     >
+      <Snackbar
+        open={!!snackbarState.message}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarState.error ? 'error' : 'success'}>
+          {snackbarState.message}
+        </Alert>
+      </Snackbar>
       <Grid container direction="column" spacing={6}>
         <Grid item>
           <Typography variant="h1">Demandes d'accès</Typography>
@@ -45,7 +67,7 @@ const AccessRequests = () => {
                 requests.map((request) => (
                   <Grid item key={request.id}>
                     <Divider />
-                    <RequestItem request={request} />
+                    <RequestItem onSubmitSuccess={handleRequestSuccess} request={request} />
                   </Grid>
                 ))
               )}
