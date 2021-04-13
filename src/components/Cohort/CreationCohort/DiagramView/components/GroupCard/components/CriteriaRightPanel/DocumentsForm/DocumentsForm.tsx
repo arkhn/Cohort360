@@ -27,7 +27,7 @@ const defaultDemographic = {
 }
 
 const alertInfoContent = `Les négations seront automatiquement filtrées.`
-const alertInfoExample = `Exemple: si vous recherchez le mot "hypertension", les documents comportant la mention "pas d'hypertension"ne seront pas retenus.`
+const alertInfoExample = `Exemple: si vous recherchez le mot "hypertension", les documents comportant la mention "pas d'hypertension" ne seront pas retenus.`
 
 const TestGeneratedForm: React.FC<TestGeneratedFormProps> = (props) => {
   const { selectedCriteria, onChangeSelectedCriteria, goBack } = props
