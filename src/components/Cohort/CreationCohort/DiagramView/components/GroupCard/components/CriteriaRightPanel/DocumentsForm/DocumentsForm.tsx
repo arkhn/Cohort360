@@ -127,7 +127,7 @@ const TestGeneratedForm: React.FC<TestGeneratedFormProps> = (props) => {
           formId="documents-form"
           displaySubmitButton={false}
         />
-        <Alert color="info">
+        <Alert color="info" className={classes.alert}>
           <Typography>
             {alertInfoContent}
             <br />
