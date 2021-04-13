@@ -46,9 +46,10 @@ const useStyles = makeStyles((theme) => ({
 type RequestItemProps = {
   request: AccessRequest
   onSubmitSuccess?: (isRejected?: boolean) => void
+  onSubmitError?: () => void
 }
 
-const RequestItem = ({ request, onSubmitSuccess }: RequestItemProps) => {
+const RequestItem = ({ request, onSubmitSuccess, onSubmitError }: RequestItemProps) => {
   const classes = useStyles()
   const dispatch = useAppDispatch()
   const [nominativeAccess, setNominativeAccess] = useState<'yes' | 'no'>('yes')
@@ -83,6 +84,9 @@ const RequestItem = ({ request, onSubmitSuccess }: RequestItemProps) => {
       .then(unwrapResult)
       .then(() => {
         onSubmitSuccess && onSubmitSuccess(isRejected)
+      })
+      .catch(() => {
+        onSubmitError && onSubmitError()
       })
   }
 

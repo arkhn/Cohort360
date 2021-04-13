@@ -12,7 +12,7 @@ import { accessRequestsSelector } from 'features/access/RequestSelector'
 
 const AccessRequests = () => {
   const classes = useStyles()
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
+  const [snackbarState, setSnackbarState] = useState<{ message?: string; error?: boolean }>({})
   const dispatch = useAppDispatch()
   const { open, requests } = useAppSelector((state) => ({
     open: state.drawer,
@@ -20,10 +20,16 @@ const AccessRequests = () => {
   }))
 
   const handleCloseSnackbar = () => {
-    setSnackbarMessage(null)
+    setSnackbarState({})
   }
   const handleRequestSuccess = () => {
-    setSnackbarMessage(`Votre réponse a bien été prise en compte`)
+    setSnackbarState({ error: false, message: `Votre réponse a bien été prise en compte` })
+  }
+  const handleRequestError = () => {
+    setSnackbarState({
+      error: true,
+      message: `Une erreur est survenue. Votre réponse n'a pas pu être prise en compte.`
+    })
   }
 
   useEffect(() => {
@@ -37,13 +43,13 @@ const AccessRequests = () => {
       })}
     >
       <Snackbar
-        open={!!snackbarMessage}
+        open={!!snackbarState.message}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
       >
-        <Alert onClose={handleCloseSnackbar} severity={'success'}>
-          {snackbarMessage}
+        <Alert onClose={handleCloseSnackbar} severity={snackbarState.error ? 'error' : 'success'}>
+          {snackbarState.message}
         </Alert>
       </Snackbar>
       <Grid container direction="column" spacing={6}>
@@ -64,7 +70,11 @@ const AccessRequests = () => {
                 requests.map((request) => (
                   <Grid item key={request.id}>
                     <Divider />
-                    <RequestItem onSubmitSuccess={handleRequestSuccess} request={request} />
+                    <RequestItem
+                      onSubmitSuccess={handleRequestSuccess}
+                      onSubmitError={handleRequestError}
+                      request={request}
+                    />
                   </Grid>
                 ))
               )}
