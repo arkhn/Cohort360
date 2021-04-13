@@ -12,7 +12,7 @@ import { accessRequestsSelector } from 'features/access/RequestSelector'
 
 const AccessRequests = () => {
   const classes = useStyles()
-  const [snackbarState, setSnackbarState] = useState<{ error?: boolean; message?: string }>({})
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
   const dispatch = useAppDispatch()
   const { open, requests } = useAppSelector((state) => ({
     open: state.drawer,
@@ -20,13 +20,10 @@ const AccessRequests = () => {
   }))
 
   const handleCloseSnackbar = () => {
-    setSnackbarState({})
+    setSnackbarMessage(null)
   }
-  const handleRequestSuccess = (isRejected?: boolean) => {
-    setSnackbarState({
-      error: isRejected,
-      message: isRejected ? `Demande d'accès refusée` : `Demande d'accès acceptée`
-    })
+  const handleRequestSuccess = () => {
+    setSnackbarMessage(`Votre réponse a bien été prise en compte`)
   }
 
   useEffect(() => {
@@ -40,13 +37,13 @@ const AccessRequests = () => {
       })}
     >
       <Snackbar
-        open={!!snackbarState.message}
+        open={!!snackbarMessage}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarState.error ? 'error' : 'success'}>
-          {snackbarState.message}
+        <Alert onClose={handleCloseSnackbar} severity={'success'}>
+          {snackbarMessage}
         </Alert>
       </Snackbar>
       <Grid container direction="column" spacing={6}>
