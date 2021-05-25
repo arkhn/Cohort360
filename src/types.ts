@@ -149,7 +149,8 @@ export enum SearchByTypes {
   text = '_text',
   family = 'family',
   given = 'given',
-  identifier = 'identifier'
+  identifier = 'identifier',
+  documents = 'pattern'
 }
 
 export enum VitalStatus {

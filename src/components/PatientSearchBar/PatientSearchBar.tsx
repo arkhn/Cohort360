@@ -96,12 +96,13 @@ const PatientSearchBar: React.FC<PatientSearchBarProps> = ({
             <MenuItem value={SearchByTypes.family}>Nom</MenuItem>
             <MenuItem value={SearchByTypes.given}>Prénom</MenuItem>
             <MenuItem value={SearchByTypes.identifier}>IPP</MenuItem>
+            <MenuItem value={SearchByTypes.documents}>Documents</MenuItem>
           </Select>
         </Grid>
       )}
       <Grid item container xs={showSelect ? 10 : 12} alignItems="center" className={classes.searchBar}>
         <InputBase
-          placeholder="Rechercher les données d'un patient: IPP, Nom ou Prénom"
+          placeholder={showSelect ? '' : "Rechercher les données d'un patient: IPP, Nom ou Prénom"}
           className={classes.input}
           value={_searchInput}
           onChange={handleChangeInput}
