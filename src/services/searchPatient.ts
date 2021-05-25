@@ -1,5 +1,5 @@
-import type { IGroup, IPatient } from '@ahryman40k/ts-fhir-types/lib/R4'
-import { last } from 'lodash'
+import type { IDocumentReference, IGroup, IPatient } from '@ahryman40k/ts-fhir-types/lib/R4'
+import { last, memoize, uniq } from 'lodash'
 
 import api from './api'
 import fakePatients from '../data/fakeData/patients'
@@ -9,6 +9,14 @@ import { CohortPatient, FHIR_API_Response, SearchByTypes } from 'types'
 import { getApiResponseResources } from 'utils/apiHelpers'
 
 const PATIENT_MAX_COUNT = 500
+
+const getPatients = memoize(
+  async (query: string): Promise<IPatient[] | undefined> => {
+    if (!query) return []
+    const response = await api.get<FHIR_API_Response<IPatient>>(query)
+    return getApiResponseResources(response)
+  }
+)
 
 export const searchPatient = async (
   nominativeGroupsIds: string[] | undefined,
@@ -36,6 +44,7 @@ export const searchPatient = async (
     let searchByFamily = ''
     let searchByGiven = ''
     let searchByIdentifier = ''
+    let searchByDocuments = ''
     let filterByService = ''
     if (groupId) {
       const response = await api.get<FHIR_API_Response<IGroup>>(`/Group?_id=${groupId}`)
@@ -47,6 +56,7 @@ export const searchPatient = async (
       searchByFamily = `family=${input}`
       searchByGiven = `given=${input}`
       searchByIdentifier = `identifier=${input}`
+      searchByDocuments = `pattern=${input}`
 
       switch (searchBy) {
         case SearchByTypes.family: {
@@ -70,8 +80,22 @@ export const searchPatient = async (
           getApiResponseResources(matchIPP)?.forEach((patient) => patientSet.add(patient))
           break
         }
+        case SearchByTypes.documents: {
+          const [matchDocuments, allowedPatients] = await Promise.all([
+            api.get<FHIR_API_Response<IDocumentReference>>(
+              `/DocumentReference/$regex?${searchByDocuments}&_count=${PATIENT_MAX_COUNT}`
+            ),
+            getPatients(`/Patient?${filterByService}${API_RESOURCE_TAG}&_count=${PATIENT_MAX_COUNT}`)
+          ])
+          const documents = getApiResponseResources(matchDocuments)
+          const patientIds = uniq(
+            documents?.map((document) => last(document.subject?.reference?.split('/'))).filter(Boolean)
+          )
+          allowedPatients?.map((patient) => patientIds.includes(patient.id) && patientSet.add(patient))
+          break
+        }
         default: {
-          const [matchIPP, matchFamily, matchGiven] = await Promise.all([
+          const [matchIPP, matchFamily, matchGiven, matchDocuments, allowedPatients] = await Promise.all([
             api.get<FHIR_API_Response<IPatient>>(
               `/Patient?${searchByIdentifier}${filterByService}${API_RESOURCE_TAG}&_count=${PATIENT_MAX_COUNT}`
             ),
@@ -80,11 +104,21 @@ export const searchPatient = async (
             ),
             api.get<FHIR_API_Response<IPatient>>(
               `/Patient?${searchByGiven}${filterByService}${API_RESOURCE_TAG}&_count=${PATIENT_MAX_COUNT}`
-            )
+            ),
+            api.get<FHIR_API_Response<IDocumentReference>>(
+              `/DocumentReference/$regex?${searchByDocuments}&_count=${PATIENT_MAX_COUNT}`
+            ),
+            getPatients(`/Patient?${filterByService}${API_RESOURCE_TAG}&_count=${PATIENT_MAX_COUNT}`)
           ])
           getApiResponseResources(matchIPP)?.forEach((patient) => patientSet.add(patient))
           getApiResponseResources(matchFamily)?.forEach((patient) => patientSet.add(patient))
           getApiResponseResources(matchGiven)?.forEach((patient) => patientSet.add(patient))
+          const patientIds = uniq(
+            getApiResponseResources(matchDocuments)
+              ?.map((document) => last(document.subject?.reference?.split('/')))
+              .filter(Boolean)
+          )
+          allowedPatients?.map((patient) => patientIds.includes(patient.id) && patientSet.add(patient))
           break
         }
       }

@@ -2,6 +2,7 @@ import React from 'react'
 
 import { Card, CardContent, Divider, Grid, Typography, CardActions } from '@material-ui/core'
 import LockIcon from '@material-ui/icons/Lock'
+import { Link } from 'react-router-dom'
 
 import PatientSearchBar from 'components/PatientSearchBar/PatientSearchBar'
 import Title from 'components/Title'
@@ -25,6 +26,9 @@ const PatientSearchCard = () => {
         ) : (
           <PatientSearchBar />
         )}
+      </CardActions>
+      <CardActions>
+        <Link to="/rechercher_patient">Recherche avancée</Link>
       </CardActions>
     </Card>
   )
