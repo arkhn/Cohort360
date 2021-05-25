@@ -118,7 +118,7 @@ export const searchPatient = async (
               ?.map((document) => last(document.subject?.reference?.split('/')))
               .filter(Boolean)
           )
-          allowedPatients?.map((patient) => patientIds.includes(patient.id) && patientSet.add(patient))
+          allowedPatients?.forEach((patient) => patientIds.includes(patient.id) && patientSet.add(patient))
           break
         }
       }
