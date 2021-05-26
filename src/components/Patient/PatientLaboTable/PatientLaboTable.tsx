@@ -7,7 +7,6 @@ import TableHead from '@material-ui/core/TableHead'
 import TableBody from '@material-ui/core/TableBody'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
-import InfoIcon from '@material-ui/icons/Info'
 import Pagination from '@material-ui/lab/Pagination'
 
 // import InputBase from '@material-ui/core/InputBase'
@@ -98,6 +97,9 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
               <TableCell align="center" className={classes.tableHeadCell}>
                 Valeur
               </TableCell>
+              <TableCell align="center" className={classes.tableHeadCell}>
+                Interprétation
+              </TableCell>
               {/* It would be possible to add information about practitioner here */}
             </TableRow>
           </TableHead>
@@ -108,16 +110,8 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
                   <TableCell align="left">{res.type}</TableCell>
                   <TableCell align="center">{res.sampleType}</TableCell>
                   <TableCell align="center">{res.date}</TableCell>
-                  <TableCell align="center">
-                    <div className={classes.tableCell}>
-                      {res.value}{' '}
-                      {res.interpretation && (
-                        <div title={res.interpretation}>
-                          <InfoIcon fontSize="small" />
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
+                  <TableCell align="center">{res.value}</TableCell>
+                  <TableCell align="center">{res.interpretation ? res.interpretation : '-'}</TableCell>
                 </TableRow>
               )
             })}
