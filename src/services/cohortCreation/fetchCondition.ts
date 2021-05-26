@@ -6,9 +6,7 @@ import apiRequest from '../../services/apiRequest'
 import { capitalizeFirstLetter } from '../../utils/capitalize'
 import { fakeValueSetCIM10, fakeValueSetDiagnosticType } from '../../data/fakeData/cohortCreation/condition'
 import { alphabeticalSort } from 'utils/alphabeticalSort'
-import { getApiResponseResources } from '../../utils/apiHelpers'
 import type { IValueSet } from '@ahryman40k/ts-fhir-types/lib/R4'
-import type { FHIR_API_Response } from '../../types'
 
 const DEFAULT_DIAGNOSTIC_TYPES = [
   {
