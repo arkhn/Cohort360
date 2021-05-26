@@ -7,6 +7,7 @@ import TableHead from '@material-ui/core/TableHead'
 import TableBody from '@material-ui/core/TableBody'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
+import InfoIcon from '@material-ui/icons/Info'
 import Pagination from '@material-ui/lab/Pagination'
 
 // import InputBase from '@material-ui/core/InputBase'
@@ -108,7 +109,14 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
                   <TableCell align="center">{res.sampleType}</TableCell>
                   <TableCell align="center">{res.date}</TableCell>
                   <TableCell align="center">
-                    {res.value} {res.interpretation ? `(${res.interpretation})` : ''}
+                    <div className={classes.tableCell}>
+                      {res.value}{' '}
+                      {res.interpretation && (
+                        <div title={res.interpretation}>
+                          <InfoIcon fontSize="small" />
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )

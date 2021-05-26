@@ -66,6 +66,11 @@ export default makeStyles((theme) => ({
       backgroundColor: '#FAF9F9'
     }
   },
+  tableCell: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly'
+  },
   pagination: {
     margin: '10px 0',
     float: 'right',
