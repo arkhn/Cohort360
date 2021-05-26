@@ -88,17 +88,15 @@ type Code = {
 
 const fetchConditionValueSet = memoize(
   async (): Promise<Code[]> => {
-    const response = await api.get<FHIR_API_Response<IValueSet>>(`/ValueSet?url=${CONDITION_VS_URL}`)
-    const valueSet = getApiResponseResources(response)
-    if (!valueSet || valueSet.length === 0) return []
-    return (
-      valueSet[0]?.compose?.include[0]?.concept
-        ?.map((value) => ({
-          id: value.code,
-          label: `${value.code} - ${value.display}`
-        }))
-        .sort((a, b) => (a.label && b.label ? a.label.localeCompare(b.label) : 0)) ?? []
-    )
+    const { data: valueSet } = await api.get<IValueSet>(`/ValueSet/$expand?url=${CONDITION_VS_URL}`)
+    const codeSet = valueSet.expansion?.contains
+    if (!codeSet) return []
+    return codeSet
+      .map((value) => ({
+        id: value.code,
+        label: `${value.code} - ${value.display}`
+      }))
+      .sort((a, b) => (a.label && b.label ? a.label.localeCompare(b.label) : 0))
   }
 )
 
