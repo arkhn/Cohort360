@@ -51,7 +51,7 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
       sampleType: labResult.bodySite ? labResult.bodySite.coding?.[0].code : '-',
       date: labResult.effectiveDateTime ? new Date(labResult.effectiveDateTime).toLocaleDateString('fr-FR') : '-',
       value: labResultValue(labResult),
-      interpretation: labResult.interpretation ? labResult.interpretation[0].coding?.[0].code : ''
+      interpretation: labResult.interpretation?.[0].coding?.[0].code
     })) ?? []
 
   const labItemNumber = 5 //Number of desired lines in the lab item array
@@ -111,7 +111,7 @@ const PatientLaboTable = ({ patient }: PatientLaboTableProps) => {
                   <TableCell align="center">{res.sampleType}</TableCell>
                   <TableCell align="center">{res.date}</TableCell>
                   <TableCell align="center">{res.value}</TableCell>
-                  <TableCell align="center">{res.interpretation ? res.interpretation : '-'}</TableCell>
+                  <TableCell align="center">{res.interpretation ?? '-'}</TableCell>
                 </TableRow>
               )
             })}
