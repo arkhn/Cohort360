@@ -1,12 +1,17 @@
 import { memoize } from 'lodash'
 
-import { CONDITION_VS_URL, CONTEXT } from '../../constants'
+import { CONTEXT } from '../../constants'
 import api from '../../services/api'
 import apiRequest from '../../services/apiRequest'
 import { capitalizeFirstLetter } from '../../utils/capitalize'
 import { fakeValueSetCIM10, fakeValueSetDiagnosticType } from '../../data/fakeData/cohortCreation/condition'
 import { alphabeticalSort } from 'utils/alphabeticalSort'
 import type { IValueSet } from '@ahryman40k/ts-fhir-types/lib/R4'
+
+// FIXME: uncomment to use the cohort condition VS
+// import { CONDITION_VS_URL } from '../../constants'
+import { FHIR_API_Response } from '../../types'
+import { getApiResponseResources } from '../../utils/apiHelpers'
 
 const DEFAULT_DIAGNOSTIC_TYPES = [
   {
@@ -86,8 +91,13 @@ type Code = {
 
 const fetchConditionValueSet = memoize(
   async (): Promise<Code[]> => {
-    const { data: valueSet } = await api.get<IValueSet>(`/ValueSet/$expand?url=${CONDITION_VS_URL}`)
-    const codeSet = valueSet.expansion?.contains
+    // FIXME: uncomment and replace the part below to use the appropriate valueSet
+    // const { data: valueSet } = await api.get<IValueSet>(`/ValueSet/$expand?url=${CONDITION_VS_URL}`)
+    // const codeSet = valueSet.expansion?.contains
+    const response = await api.get<FHIR_API_Response<IValueSet>>('/ValueSet?url=http://arkhn.com/icd9_VS')
+    const valueSetList = getApiResponseResources(response)
+    const codeSet = valueSetList?.[0]?.compose?.include[0]?.concept
+
     if (!codeSet) return []
     return codeSet
       .map((value) => ({
