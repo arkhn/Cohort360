@@ -17,19 +17,19 @@ const PatientSearchCard = () => {
         <Title>Chercher un patient dans votre périmètre</Title>
         <Divider />
       </CardContent>
-      <CardActions>
-        {deidentifiedBoolean ? (
+      {deidentifiedBoolean ? (
+        <CardActions>
           <Grid container justify="center">
             <LockIcon />
             <Typography variant="h6">Fonctionnalité désactivée en mode pseudonymisé.</Typography>
           </Grid>
-        ) : (
+        </CardActions>
+      ) : (
+        <CardActions>
           <PatientSearchBar />
-        )}
-      </CardActions>
-      <CardActions>
-        <Link to="/rechercher_patient">Recherche avancée</Link>
-      </CardActions>
+          <Link to="/rechercher_patient">Recherche avancée</Link>
+        </CardActions>
+      )}
     </Card>
   )
 }
