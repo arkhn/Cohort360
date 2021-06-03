@@ -1,14 +1,14 @@
 import { memoize } from 'lodash'
 
-import { CONTEXT } from '../../constants'
+import { CONDITION_VS_URL, CONTEXT } from '../../constants'
 import api from '../../services/api'
 import apiRequest from '../../services/apiRequest'
 import { capitalizeFirstLetter } from '../../utils/capitalize'
 import { fakeValueSetCIM10, fakeValueSetDiagnosticType } from '../../data/fakeData/cohortCreation/condition'
 import { alphabeticalSort } from 'utils/alphabeticalSort'
-import { getApiResponseResources } from '../../utils/apiHelpers'
 import type { IValueSet } from '@ahryman40k/ts-fhir-types/lib/R4'
-import type { FHIR_API_Response } from '../../types'
+import { FHIR_API_Response } from '../../types'
+import { getApiResponseResources } from '../../utils/apiHelpers'
 
 const DEFAULT_DIAGNOSTIC_TYPES = [
   {
@@ -86,26 +86,26 @@ type Code = {
   label?: string
 }
 
-const fetchICD9ValueSet = memoize(
+const fetchConditionValueSet = memoize(
   async (): Promise<Code[]> => {
-    const response = await api.get<FHIR_API_Response<IValueSet>>('/ValueSet?url=http://arkhn.com/icd9_VS')
-    const valueSet = getApiResponseResources(response)
-    if (!valueSet || valueSet.length === 0) return []
-    return (
-      valueSet[0]?.compose?.include[0]?.concept
-        ?.map((value) => ({
-          id: value.code,
-          label: value.display
-        }))
-        .sort((a, b) => (a.label && b.label ? a.label.localeCompare(b.label) : 0)) ?? []
-    )
+    const response = await api.get<FHIR_API_Response<IValueSet>>(`/ValueSet?url=${CONDITION_VS_URL}`)
+    const valueSetList = getApiResponseResources(response)
+    const codeSet = valueSetList?.[0]?.compose?.include[0]?.concept
+
+    if (!codeSet) return []
+    return codeSet
+      .map((value) => ({
+        id: value.code,
+        label: `${value.code} - ${value.display}`
+      }))
+      .sort((a, b) => (a.label && b.label ? a.label.localeCompare(b.label) : 0))
   }
 )
 
 // todo: check if the data syntax is correct when available
 export const fetchCim10Diagnostic = async (searchValue?: string) => {
   if (CONTEXT === 'arkhn') {
-    return fetchICD9ValueSet()
+    return fetchConditionValueSet()
   } else if (CONTEXT === 'fakedata') {
     return fakeValueSetCIM10 && fakeValueSetCIM10.length > 0
       ? fakeValueSetCIM10.map((_fakeValueSetCIM10: { code: string; display: string }) => ({
