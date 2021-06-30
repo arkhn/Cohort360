@@ -33,10 +33,12 @@ import {
   DocumentReferenceStatusKind,
   EncounterStatusKind,
   IEncounter,
-  IDocumentReference
+  IDocumentReference,
+  IExtension
 } from '@ahryman40k/ts-fhir-types/lib/R4'
 import { fetchDocumentContent } from 'services/cohortInfos'
 import { getDocumentStatus, getEncounterStatus } from 'utils/documentsFormatter'
+import PdfRenderer from 'components/Cohort/Documents/PdfRenderer/PdfRenderer'
 
 import useStyles from './styles'
 import { FILES_SERVER_URL } from '../../../../constants'
@@ -106,6 +108,11 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
     }
   }
 
+  const renderFallback = (rawTextExtension?: IExtension) => {
+    if (!rawTextExtension) return <p>Le document est introuvable.</p>
+    return <PdfRenderer content={rawTextExtension.valueString} />
+  }
+
   const row = {
     ...document,
     title: document.description ?? '-',
@@ -138,7 +145,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
         minute: '2-digit'
       })
     : ''
-
+  console.log(row, `${FILES_SERVER_URL}${row.content[0].attachment?.url?.replace(/^file:\/\//, '')}`)
   return (
     <Grid container item direction="column" className={classes.row}>
       <Grid container item>
@@ -233,7 +240,13 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
                     ))}
                   {!deidentified && row.content && row.content[0].attachment?.url?.endsWith('.pdf') && (
                     <Document
-                      error={'Le document est introuvable.'}
+                      error={() =>
+                        renderFallback(
+                          row.extension?.find(
+                            (e) => e.url === 'http://hl7.org/fhir/StructureDefinition/documentreference-raw-text'
+                          )
+                        )
+                      }
                       loading={'PDF en cours de chargement...'}
                       file={{
                         url: `${FILES_SERVER_URL}${row.content[0].attachment?.url?.replace(/^file:\/\//, '')}`,
