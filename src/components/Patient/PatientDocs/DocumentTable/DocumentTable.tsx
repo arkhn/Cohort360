@@ -101,7 +101,6 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({ deidentified, document }) => 
       )
     }
   }
-
   return (
     <>
       <TableRow key={row.id} className={classes.tableBodyRows}>
