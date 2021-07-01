@@ -109,7 +109,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
   }
 
   const renderFallback = (rawTextExtension?: IExtension) => {
-    if (!rawTextExtension) return <p>Le document est introuvable.</p>
+    if (!rawTextExtension || !rawTextExtension.valueString) return <p>Le document est introuvable.</p>
     return <PdfRenderer content={rawTextExtension.valueString} />
   }
 
@@ -145,7 +145,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
         minute: '2-digit'
       })
     : ''
-  console.log(row, `${FILES_SERVER_URL}${row.content[0].attachment?.url?.replace(/^file:\/\//, '')}`)
+
   return (
     <Grid container item direction="column" className={classes.row}>
       <Grid container item>
