@@ -479,10 +479,12 @@ const fetchDocuments = async (
       // api.get<FHIR_API_Response<IComposition>>(
       //   `/Composition?facet=cloud&size=0&_sort=${_sortDirection}${sortBy}&status=final${elements}${searchByGroup}${search}${docTypesFilter}${ndaFilter}${dateFilter}`
       // ),
+      // When trying to sort on the `date` search param, the api returns 0 resources.
+      // See https://github.com/arkhn/Cohort360/issues/113
       api.get<FHIR_API_Response<IDocumentReference>>(
         `/DocumentReference${search}_count=10000&_getpagesoffset=${
           page ? (page - 1) * 20 : 0
-        }&_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}`
+        }&_sort=${_sortDirection}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}`
       ),
       search !== '?'
         ? api.get<FHIR_API_Response<IDocumentReference>>(
