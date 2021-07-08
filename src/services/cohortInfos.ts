@@ -486,7 +486,8 @@ const fetchDocuments = async (
       ),
       search !== '?'
         ? api.get<FHIR_API_Response<IDocumentReference>>(
-            `/DocumentReference?_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
+            // `/DocumentReference?_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
+            `/DocumentReference?${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
           )
         : null
     ])
