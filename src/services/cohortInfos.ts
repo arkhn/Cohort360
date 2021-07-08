@@ -456,7 +456,7 @@ const fetchDocuments = async (
 
     const docTypesFilter = selectedDocTypes.length > 0 ? `&type=${selectedDocTypes.join()}` : ''
     const ndaFilter = nda ? `&encounter.identifier=${nda}` : ''
-    const _sortDirection = sortDirection === 'desc' ? '-' : ''
+    // const _sortDirection = sortDirection === 'desc' ? '-' : ''
     let dateFilter = ''
 
     if (startDate || endDate) {
