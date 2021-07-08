@@ -110,7 +110,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
 
   const renderFallback = (rawTextExtensions: IExtension[]) => {
     if (rawTextExtensions.length === 0) return <p>Le document est introuvable.</p>
-    const contentBlocks = rawTextExtensions.map(e => e.valueString).filter(Boolean) as string[]
+    const contentBlocks = rawTextExtensions.map((e) => e.valueString).filter(Boolean) as string[]
     return <PdfRenderer contentBlocks={contentBlocks} />
   }
 
@@ -244,7 +244,9 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
                       error={() =>
                         renderFallback(
                           row.extension?.filter(
-                            (e) => e.url === 'http://hl7.org/fhir/StructureDefinition/documentreference-raw-text' && !!e.valueString
+                            (e) =>
+                              e.url === 'http://hl7.org/fhir/StructureDefinition/documentreference-raw-text' &&
+                              !!e.valueString
                           ) || []
                         )
                       }

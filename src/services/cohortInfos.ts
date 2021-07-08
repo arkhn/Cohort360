@@ -486,6 +486,8 @@ const fetchDocuments = async (
       ),
       search !== '?'
         ? api.get<FHIR_API_Response<IDocumentReference>>(
+            // When trying to sort on the `date` search param, the api returns 0 resources.
+            // See https://github.com/arkhn/Cohort360/issues/113
             // `/DocumentReference?_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
             `/DocumentReference?${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
           )
