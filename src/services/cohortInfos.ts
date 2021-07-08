@@ -484,7 +484,7 @@ const fetchDocuments = async (
       api.get<FHIR_API_Response<IDocumentReference>>(
         `/DocumentReference${search}_count=10000&_getpagesoffset=${
           page ? (page - 1) * 20 : 0
-        }&_sort=${_sortDirection}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}`
+        }${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}`
       ),
       search !== '?'
         ? api.get<FHIR_API_Response<IDocumentReference>>(
