@@ -151,7 +151,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
     <Grid container item direction="column" className={classes.row}>
       <Grid container item>
         <Grid container item direction="column" justify="center" xs={4}>
-          <Typography variant="button">{row.title ?? 'Document sans titre'}</Typography>
+          <Typography variant="button">{row.content?.[0]?.attachment?.title ?? '-'}</Typography>
           <Typography>
             {date} {hour}
           </Typography>
@@ -198,13 +198,12 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
           </Grid>
           {!deidentified && (
             <Grid container item xs={1} justify="center">
-              {row.content && row.content[0] && row.content[0].attachment?.url?.endsWith('.pdf') ? (
+              {row.content?.[0]?.attachment?.url?.endsWith('.pdf') ? (
                 <IconButton onClick={() => openPdfDialog(row.id)}>
                   <PdfIcon height="30px" fill="#ED6D91" />
                 </IconButton>
               ) : (
-                row.content &&
-                row.content[0] && (
+                row.content?.[0].attachment?.url && (
                   <>
                     <IconButton type="button" onClick={handleImageOpen}>
                       <ImageIcon />
