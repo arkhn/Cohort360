@@ -456,7 +456,7 @@ const fetchDocuments = async (
 
     const docTypesFilter = selectedDocTypes.length > 0 ? `&type=${selectedDocTypes.join()}` : ''
     const ndaFilter = nda ? `&encounter.identifier=${nda}` : ''
-    const _sortDirection = sortDirection === 'desc' ? '-' : ''
+    // const _sortDirection = sortDirection === 'desc' ? '-' : ''
     let dateFilter = ''
 
     if (startDate || endDate) {
@@ -479,14 +479,19 @@ const fetchDocuments = async (
       // api.get<FHIR_API_Response<IComposition>>(
       //   `/Composition?facet=cloud&size=0&_sort=${_sortDirection}${sortBy}&status=final${elements}${searchByGroup}${search}${docTypesFilter}${ndaFilter}${dateFilter}`
       // ),
+      // When trying to sort on the `date` search param, the api returns 0 resources.
+      // See https://github.com/arkhn/Cohort360/issues/113
       api.get<FHIR_API_Response<IDocumentReference>>(
         `/DocumentReference${search}_count=10000&_getpagesoffset=${
           page ? (page - 1) * 20 : 0
-        }&_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}`
+        }${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}`
       ),
       search !== '?'
         ? api.get<FHIR_API_Response<IDocumentReference>>(
-            `/DocumentReference?_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
+            // When trying to sort on the `date` search param, the api returns 0 resources.
+            // See https://github.com/arkhn/Cohort360/issues/113
+            // `/DocumentReference?_sort=${_sortDirection}${sortBy}${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
+            `/DocumentReference?${searchByGroup}${docTypesFilter}${ndaFilter}${dateFilter}&_summary=count`
           )
         : null
     ])

@@ -25,13 +25,13 @@ const styles = StyleSheet.create({
 })
 
 type PdfRendererProps = {
-  content: string
+  contentBlocks: string[]
 }
 
-const PdfRenderer: React.FC<PdfRendererProps> = ({ content }) => {
+const PdfRenderer: React.FC<PdfRendererProps> = ({ contentBlocks }) => {
   // FIXME: for now we assume that each section of the document is
   // splitted by a double line break but this is not always the case.
-  const sections = content.split('\n\n').filter(Boolean)
+  const sections = contentBlocks.reduce((acc: string[], b) => [...acc, ...b.split('\n\n').filter(Boolean)], [])
   return (
     <Document>
       <Page size="A4" style={styles.page}>

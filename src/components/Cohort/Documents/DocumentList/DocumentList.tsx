@@ -108,9 +108,10 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
     }
   }
 
-  const renderFallback = (rawTextExtension?: IExtension) => {
-    if (!rawTextExtension || !rawTextExtension.valueString) return <p>Le document est introuvable.</p>
-    return <PdfRenderer content={rawTextExtension.valueString} />
+  const renderFallback = (rawTextExtensions: IExtension[]) => {
+    if (rawTextExtensions.length === 0) return <p>Le document est introuvable.</p>
+    const contentBlocks = rawTextExtensions.map((e) => e.valueString).filter(Boolean) as string[]
+    return <PdfRenderer contentBlocks={contentBlocks} />
   }
 
   const row = {
@@ -150,7 +151,7 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
     <Grid container item direction="column" className={classes.row}>
       <Grid container item>
         <Grid container item direction="column" justify="center" xs={4}>
-          <Typography variant="button">{row.title ?? 'Document sans titre'}</Typography>
+          <Typography variant="button">{row.content?.[0]?.attachment?.title ?? '-'}</Typography>
           <Typography>
             {date} {hour}
           </Typography>
@@ -197,13 +198,12 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
           </Grid>
           {!deidentified && (
             <Grid container item xs={1} justify="center">
-              {row.content && row.content[0] && row.content[0].attachment?.url?.endsWith('.pdf') ? (
+              {row.content?.[0]?.attachment?.url?.endsWith('.pdf') ? (
                 <IconButton onClick={() => openPdfDialog(row.id)}>
                   <PdfIcon height="30px" fill="#ED6D91" />
                 </IconButton>
               ) : (
-                row.content &&
-                row.content[0] && (
+                row.content?.[0].attachment?.url && (
                   <>
                     <IconButton type="button" onClick={handleImageOpen}>
                       <ImageIcon />
@@ -242,9 +242,11 @@ const DocumentRow: React.FC<DocumentRowTypes> = ({
                     <Document
                       error={() =>
                         renderFallback(
-                          row.extension?.find(
-                            (e) => e.url === 'http://hl7.org/fhir/StructureDefinition/documentreference-raw-text'
-                          )
+                          row.extension?.filter(
+                            (e) =>
+                              e.url === 'http://hl7.org/fhir/StructureDefinition/documentreference-raw-text' &&
+                              !!e.valueString
+                          ) || []
                         )
                       }
                       loading={'PDF en cours de chargement...'}
